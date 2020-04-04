@@ -25,7 +25,7 @@ package org.joml;
 
 /**
  * Pseudo-random number generator.
- * 
+ *
  * @author Kai Burjack
  */
 public class Random {
@@ -65,7 +65,7 @@ public class Random {
 
         /**
          * Reference: <a href="https://github.com/roquendm/JGO-Grabbag/blob/master/src/roquen/math/rng/PRNG.java">https://github.com/roquendm/</a>
-         * 
+         *
          * @author roquendm
          */
         final float nextFloat() {
@@ -104,7 +104,7 @@ public class Random {
 
         /**
          * Reference: <a href="https://github.com/roquendm/JGO-Grabbag/blob/master/src/roquen/math/rng/PRNG.java">https://github.com/roquendm/</a>
-         * 
+         *
          * @author roquendm
          */
         final int nextInt(int n) {
@@ -120,9 +120,28 @@ public class Random {
 
     private final Xorshiro128 rnd;
 
+    //8020463840 is from "Case File n_221: Kabukicho"
+    private static volatile long seedHalf = 8020463840L;
+
+    public static long newSeed() {
+        // 3512401965023503517 is from L'Ecuyer, "Tables of Linear Congruential Generators of
+        // Different Sizes and Good Lattice Structure", 1999
+        long seedHalfLocal = Random.seedHalf;
+        seedHalfLocal *= 3512401965023503517L;
+        Random.seedHalf = seedHalfLocal;
+        return seedHalfLocal;
+    }
+
     /**
      * Create a new instance of {@link Random} and initialize it with the given <code>seed</code>.
-     * 
+     */
+    public Random() {
+        this(newSeed() ^ System.nanoTime());
+    }
+
+    /**
+     * Create a new instance of {@link Random} and initialize it with the given <code>seed</code>.
+     *
      * @param seed
      *            the seed number
      */
@@ -132,7 +151,7 @@ public class Random {
 
     /**
      * Generate a uniformly distributed floating-point number in the half-open range [0, 1).
-     * 
+     *
      * @return a random float in the range [0..1)
      */
     public float nextFloat() {
@@ -141,7 +160,7 @@ public class Random {
 
     /**
      * Generate a uniformly distributed integer in the half-open range [0, n).
-     * 
+     *
      * @param n
      *            the upper limit (exclusive) of the generated integer
      * @return a random integer in the range [0..n)
