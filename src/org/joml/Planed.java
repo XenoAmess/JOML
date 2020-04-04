@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2017-2019 JOML
+ * Copyright (c) 2017-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.joml.internal.Options;
-import org.joml.internal.Runtime;
 
 /**
  * Represents a 3D plane using double-precision floating-point numbers.
@@ -190,12 +187,27 @@ public class Planed implements Externalizable {
      * @return dest
      */
     public Planed normalize(Planed dest) {
-        double invLength = 1.0 / Math.sqrt(a * a + b * b + c * c);
+        double invLength = Math.invsqrt(a * a + b * b + c * c);
         dest.a = a * invLength;
         dest.b = b * invLength;
         dest.c = c * invLength;
         dest.d = d * invLength;
         return dest;
+    }
+
+    /**
+     * Compute the signed distance between this plane and the given point.
+     * 
+     * @param x
+     *          the x coordinate of the point
+     * @param y
+     *          the y coordinate of the point
+     * @param z
+     *          the z coordinate of the point
+     * @return the signed distance between this plane and the point
+     */
+    public double distance(double x, double y, double z) {
+        return Intersectiond.distancePointPlane(x, y, z, a, b, c, d);
     }
 
     /**
@@ -321,7 +333,7 @@ public class Planed implements Externalizable {
      * @return the string representation
      */
     public String toString(NumberFormat formatter) {
-        return "[" + formatter.format(a) + " " + formatter.format(b) + " " + formatter.format(c) + " " + formatter.format(d) + "]";
+        return "[" + Runtime.format(a, formatter) + " " + Runtime.format(b, formatter) + " " + Runtime.format(c, formatter) + " " + Runtime.format(d, formatter) + "]";
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {

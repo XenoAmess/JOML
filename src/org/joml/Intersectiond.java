@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015-2019 Kai Burjack
+ * Copyright (c) 2015-2020 Kai Burjack
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,8 +22,6 @@
  * THE SOFTWARE.
  */
 package org.joml;
-
-import org.joml.internal.Runtime;
 
 /**
  * Contains intersection and distance tests for some 2D and 3D geometric primitives.
@@ -103,7 +101,7 @@ public class Intersectiond {
      * {@link #intersectSweptSphereTriangle}
      * to signal that the closest point lies on the face of the triangle.
      */
-    public static final int POINT_ON_TRIANGLE_FACE = 2;
+    public static final int POINT_ON_TRIANGLE_FACE = 7;
 
     /**
      * Return value of {@link #intersectRayAar(double, double, double, double, double, double, double, double, Vector2d)} and
@@ -239,7 +237,7 @@ public class Intersectiond {
             double a, double b, double c, double d,
             double centerX, double centerY, double centerZ, double radius,
             Vector4d intersectionCenterAndRadius) {
-        double invDenom = 1.0 / Math.sqrt(a * a + b * b + c * c);
+        double invDenom = Math.invsqrt(a * a + b * b + c * c);
         double dist = (a * centerX + b * centerY + c * centerZ + d) * invDenom;
         if (-radius <= dist && dist <= radius) {
             intersectionCenterAndRadius.x = centerX + dist * a * invDenom;
@@ -1491,7 +1489,7 @@ public class Intersectiond {
             b = v1Z0Z * v2X0X - v2Z0Z * v1X0X;
             c = v1X0X * v2Y0Y - v2X0X * v1Y0Y;
             computed = true;
-            double invLen = 1.0 / Math.sqrt(a*a + b*b + c*c);
+            double invLen = Math.invsqrt(a*a + b*b + c*c);
             a *= invLen; b *= invLen; c *= invLen;
             nd = -(a * v0X + b * v0Y + c * v0Z);
             d = (a * aX + b * aY + c * aZ + nd);
@@ -1515,7 +1513,7 @@ public class Intersectiond {
                 a = v1Y0Y * v2Z0Z - v2Y0Y * v1Z0Z;
                 b = v1Z0Z * v2X0X - v2Z0Z * v1X0X;
                 c = v1X0X * v2Y0Y - v2X0X * v1Y0Y;
-                double invLen = 1.0 / Math.sqrt(a*a + b*b + c*c);
+                double invLen = Math.invsqrt(a*a + b*b + c*c);
                 a *= invLen; b *= invLen; c *= invLen;
                 nd = -(a * v0X + b * v0Y + c * v0Z);
             }
@@ -1809,7 +1807,7 @@ public class Intersectiond {
         double b = v10Z * v20X - v20Z * v10X;
         double c = v10X * v20Y - v20X * v10Y;
         double d = -(a * v0X + b * v0Y + c * v0Z);
-        double invLen = 1.0 / Math.sqrt(a * a + b * b + c * c);
+        double invLen = Math.invsqrt(a * a + b * b + c * c);
         double signedDist = (a * centerX + b * centerY + c * centerZ + d) * invLen;
         double dot = (a * velX + b * velY + c * velZ) * invLen;
         if (dot < epsilon && dot > -epsilon)
@@ -3431,7 +3429,7 @@ public class Intersectiond {
      * @return <code>true</code> iff the line intersects the circle; <code>false</code> otherwise
      */
     public static boolean intersectLineCircle(double a, double b, double c, double centerX, double centerY, double radius, Vector3d intersectionCenterAndHL) {
-        double invDenom = 1.0 / Math.sqrt(a * a + b * b);
+        double invDenom = Math.invsqrt(a * a + b * b);
         double dist = (a * centerX + b * centerY + c) * invDenom;
         if (-radius <= dist && dist <= radius) {
             intersectionCenterAndHL.x = centerX + dist * a * invDenom;

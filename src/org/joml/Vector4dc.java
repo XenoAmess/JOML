@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -408,6 +408,18 @@ public interface Vector4dc {
     Vector4d mulProject(Matrix4dc mat, Vector4d dest);
 
     /**
+     * Multiply the given matrix <code>mat</code> with this Vector4d, perform perspective division
+     * and store the <code>(x, y, z)</code> result in <code>dest</code>.
+     * 
+     * @param mat
+     *          the matrix to multiply this vector by
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3d mulProject(Matrix4dc mat, Vector3d dest);
+
+    /**
      * Multiply this Vector4d by the given scalar value and store the result in <code>dest</code>.
      * 
      * @param scalar
@@ -730,6 +742,36 @@ public interface Vector4dc {
     double get(int component) throws IllegalArgumentException;
 
     /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector
+     * using the given {@link RoundingMode}.
+     *
+     * @param mode
+     *          the {@link RoundingMode} to use
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4i get(int mode, Vector4i dest);
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4f get(Vector4f dest);
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4d get(Vector4d dest);
+
+    /**
      * Determine the component with the biggest absolute value.
      * 
      * @return the component index, within <code>[0..3]</code>
@@ -787,6 +829,16 @@ public interface Vector4dc {
      *         {@code false} otherwise
      */
     boolean isFinite();
+
+    /**
+     * Compute the absolute of each of this vector's components
+     * and store the result into <code>dest</code>.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4d absolute(Vector4d dest);
 
     /**
      * Compare the vector components of <code>this</code> vector with the given vector using the given <code>delta</code>

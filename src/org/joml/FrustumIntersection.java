@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015-2019 Kai Burjack
+ * Copyright (c) 2015-2020 Kai Burjack
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -203,37 +203,37 @@ public class FrustumIntersection {
         float invl;
         nxX = m.m03() + m.m00(); nxY = m.m13() + m.m10(); nxZ = m.m23() + m.m20(); nxW = m.m33() + m.m30();
         if (allowTestSpheres) {
-            invl = (float) (1.0 / Math.sqrt(nxX * nxX + nxY * nxY + nxZ * nxZ));
+            invl = Math.invsqrt(nxX * nxX + nxY * nxY + nxZ * nxZ);
             nxX *= invl; nxY *= invl; nxZ *= invl; nxW *= invl;
         }
         planes[0].set(nxX, nxY, nxZ, nxW);
         pxX = m.m03() - m.m00(); pxY = m.m13() - m.m10(); pxZ = m.m23() - m.m20(); pxW = m.m33() - m.m30();
         if (allowTestSpheres) {
-            invl = (float) (1.0 / Math.sqrt(pxX * pxX + pxY * pxY + pxZ * pxZ));
+            invl = Math.invsqrt(pxX * pxX + pxY * pxY + pxZ * pxZ);
             pxX *= invl; pxY *= invl; pxZ *= invl; pxW *= invl;
         }
         planes[1].set(pxX, pxY, pxZ, pxW);
         nyX = m.m03() + m.m01(); nyY = m.m13() + m.m11(); nyZ = m.m23() + m.m21(); nyW = m.m33() + m.m31();
         if (allowTestSpheres) {
-            invl = (float) (1.0 / Math.sqrt(nyX * nyX + nyY * nyY + nyZ * nyZ));
+            invl = Math.invsqrt(nyX * nyX + nyY * nyY + nyZ * nyZ);
             nyX *= invl; nyY *= invl; nyZ *= invl; nyW *= invl;
         }
         planes[2].set(nyX, nyY, nyZ, nyW);
         pyX = m.m03() - m.m01(); pyY = m.m13() - m.m11(); pyZ = m.m23() - m.m21(); pyW = m.m33() - m.m31();
         if (allowTestSpheres) {
-            invl = (float) (1.0 / Math.sqrt(pyX * pyX + pyY * pyY + pyZ * pyZ));
+            invl = Math.invsqrt(pyX * pyX + pyY * pyY + pyZ * pyZ);
             pyX *= invl; pyY *= invl; pyZ *= invl; pyW *= invl;
         }
         planes[3].set(pyX, pyY, pyZ, pyW);
         nzX = m.m03() + m.m02(); nzY = m.m13() + m.m12(); nzZ = m.m23() + m.m22(); nzW = m.m33() + m.m32();
         if (allowTestSpheres) {
-            invl = (float) (1.0 / Math.sqrt(nzX * nzX + nzY * nzY + nzZ * nzZ));
+            invl = Math.invsqrt(nzX * nzX + nzY * nzY + nzZ * nzZ);
             nzX *= invl; nzY *= invl; nzZ *= invl; nzW *= invl;
         }
         planes[4].set(nzX, nzY, nzZ, nzW);
         pzX = m.m03() - m.m02(); pzY = m.m13() - m.m12(); pzZ = m.m23() - m.m22(); pzW = m.m33() - m.m32();
         if (allowTestSpheres) {
-            invl = (float) (1.0 / Math.sqrt(pzX * pzX + pzY * pzY + pzZ * pzZ));
+            invl = Math.invsqrt(pzX * pzX + pzY * pzY + pzZ * pzZ);
             pzX *= invl; pzY *= invl; pzZ *= invl; pzW *= invl;
         }
         planes[5].set(pzX, pzY, pzZ, pzW);
@@ -603,6 +603,33 @@ public class FrustumIntersection {
             }
         }
         return plane;
+    }
+
+    /**
+     * Compute the signed distance from the given axis-aligned box to the <code>plane</code>.
+     * 
+     * @param minX
+     *          the x-coordinate of the minimum corner
+     * @param minY
+     *          the y-coordinate of the minimum corner
+     * @param minZ
+     *          the z-coordinate of the minimum corner
+     * @param maxX
+     *          the x-coordinate of the maximum corner
+     * @param maxY
+     *          the y-coordinate of the maximum corner
+     * @param maxZ
+     *          the z-coordinate of the maximum corner
+     * @param plane
+     *          one of 
+     *          {@link #PLANE_NX}, {@link #PLANE_PX},
+     *          {@link #PLANE_NY}, {@link #PLANE_PY}, 
+     *          {@link #PLANE_NZ} and {@link #PLANE_PZ}
+     * @return the signed distance of the axis-aligned box to the plane
+     */
+    public float distanceToPlane(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, int plane) {
+        return planes[plane].x * (planes[plane].x < 0 ? maxX : minX) + planes[plane].y * (planes[plane].y < 0 ? maxY : minY)
+                + planes[plane].z * (planes[plane].z < 0 ? maxZ : minZ) + planes[plane].w;
     }
 
     /**

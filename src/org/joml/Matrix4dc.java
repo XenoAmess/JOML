@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -275,6 +275,92 @@ public interface Matrix4dc {
     Matrix4d mul(Matrix4dc right, Matrix4d dest);
 
     /**
+     * Multiply this matrix by the matrix with the supplied elements and store the result in <code>dest</code>.
+     * <p>
+     * If <code>M</code> is <code>this</code> matrix and <code>R</code> the <code>right</code> matrix whose 
+     * elements are supplied via the parameters, then the new matrix will be <code>M * R</code>.
+     * So when transforming a vector <code>v</code> with the new matrix by using <code>M * R * v</code>, the
+     * transformation of the right matrix will be applied first!
+     *
+     * @param r00
+     *          the m00 element of the right matrix
+     * @param r01
+     *          the m01 element of the right matrix
+     * @param r02
+     *          the m02 element of the right matrix
+     * @param r03
+     *          the m03 element of the right matrix
+     * @param r10
+     *          the m10 element of the right matrix
+     * @param r11
+     *          the m11 element of the right matrix
+     * @param r12
+     *          the m12 element of the right matrix
+     * @param r13
+     *          the m13 element of the right matrix
+     * @param r20
+     *          the m20 element of the right matrix
+     * @param r21
+     *          the m21 element of the right matrix
+     * @param r22
+     *          the m22 element of the right matrix
+     * @param r23
+     *          the m23 element of the right matrix
+     * @param r30
+     *          the m30 element of the right matrix
+     * @param r31
+     *          the m31 element of the right matrix
+     * @param r32
+     *          the m32 element of the right matrix
+     * @param r33
+     *          the m33 element of the right matrix
+     * @param dest
+     *          the destination matrix, which will hold the result
+     * @return dest
+     */
+    Matrix4d mul(
+            double r00, double r01, double r02, double r03,
+            double r10, double r11, double r12, double r13,
+            double r20, double r21, double r22, double r23,
+            double r30, double r31, double r32, double r33, Matrix4d dest);
+
+    /**
+     * Multiply this matrix by the 3x3 matrix with the supplied elements expanded to a 4x4 matrix with 
+     * all other matrix elements set to identity, and store the result in <code>dest</code>.
+     * <p>
+     * If <code>M</code> is <code>this</code> matrix and <code>R</code> the <code>right</code> matrix whose 
+     * elements are supplied via the parameters, then the new matrix will be <code>M * R</code>.
+     * So when transforming a vector <code>v</code> with the new matrix by using <code>M * R * v</code>, the
+     * transformation of the right matrix will be applied first!
+     *
+     * @param r00
+     *          the m00 element of the right matrix
+     * @param r01
+     *          the m01 element of the right matrix
+     * @param r02
+     *          the m02 element of the right matrix
+     * @param r10
+     *          the m10 element of the right matrix
+     * @param r11
+     *          the m11 element of the right matrix
+     * @param r12
+     *          the m12 element of the right matrix
+     * @param r20
+     *          the m20 element of the right matrix
+     * @param r21
+     *          the m21 element of the right matrix
+     * @param r22
+     *          the m22 element of the right matrix
+     * @param dest
+     *          the destination matrix, which will hold the result
+     * @return this
+     */
+    Matrix4d mul3x3(
+            double r00, double r01, double r02,
+            double r10, double r11, double r12,
+            double r20, double r21, double r22, Matrix4d dest);
+
+    /**
      * Pre-multiply this matrix by the supplied <code>left</code> matrix and store the result in <code>dest</code>.
      * <p>
      * If <code>M</code> is <code>this</code> matrix and <code>L</code> the <code>left</code> matrix,
@@ -411,6 +497,22 @@ public interface Matrix4dc {
      * @return dest
      */
     Matrix4d mulPerspectiveAffine(Matrix4dc view, Matrix4d dest);
+
+    /**
+     * Multiply <code>this</code> symmetric perspective projection matrix by the supplied <code>view</code> matrix and store the result in <code>dest</code>.
+     * <p>
+     * If <code>P</code> is <code>this</code> matrix and <code>V</code> the <code>view</code> matrix,
+     * then the new matrix will be <code>P * V</code>. So when transforming a
+     * vector <code>v</code> with the new matrix by using <code>P * V * v</code>, the
+     * transformation of the <code>view</code> matrix will be applied first!
+     *
+     * @param view
+     *          the matrix to multiply <code>this</code> symmetric perspective projection matrix by
+     * @param dest
+     *          the destination matrix, which will hold the result
+     * @return dest
+     */
+    Matrix4d mulPerspectiveAffine(Matrix4x3dc view, Matrix4d dest);
 
     /**
      * Multiply this matrix by the supplied <code>right</code> matrix, which is assumed to be {@link #isAffine() affine}, and store the result in <code>dest</code>.
@@ -1343,6 +1445,24 @@ public interface Matrix4dc {
      * @return dest
      */
     Vector3d transformProject(double x, double y, double z, Vector3d dest);
+
+    /**
+     * Transform/multiply the vector <code>(x, y, z, w)</code> by this matrix, perform perspective divide and store
+     * <code>(x, y, z)</code> of the result in <code>dest</code>.
+     * 
+     * @param x
+     *          the x coordinate of the vector to transform
+     * @param y
+     *          the y coordinate of the vector to transform
+     * @param z
+     *          the z coordinate of the vector to transform
+     * @param w
+     *          the w coordinate of the vector to transform
+     * @param dest
+     *          will contain the <code>(x, y, z)</code> components of the result
+     * @return dest
+     */
+    Vector3d transformProject(double x, double y, double z, double w, Vector3d dest);
 
     /**
      * Transform/multiply the given 3D-vector, as if it was a 4D-vector with w=1, by
@@ -2773,6 +2893,28 @@ public interface Matrix4dc {
      * @throws IndexOutOfBoundsException if <code>column</code> is not in <code>[0..3]</code>
      */
     Vector3d getColumn(int column, Vector3d dest) throws IndexOutOfBoundsException;
+
+    /**
+     * Get the matrix element value at the given column and row.
+     * 
+     * @param column
+     *          the colum index in <code>[0..3]</code>
+     * @param row
+     *          the row index in <code>[0..3]</code>
+     * @return the element value
+     */
+    double get(int column, int row);
+
+    /**
+     * Get the matrix element value at the given row and column.
+     * 
+     * @param row
+     *          the row index in <code>[0..3]</code>
+     * @param column
+     *          the colum index in <code>[0..3]</code>
+     * @return the element value
+     */
+    double getRowColumn(int row, int column);
 
     /**
      * Compute a normal matrix from the upper left 3x3 submatrix of <code>this</code>
@@ -4482,6 +4624,10 @@ public interface Matrix4dc {
      * any coordinate system that existed before <code>this</code>
      * transformation was applied to it in order to yield homogeneous clipping space.
      * <p>
+     * This method is equivalent to calling: <code>invert(new Matrix4d()).transformProject(0, 0, -1, 0, origin)</code>
+     * and in the case of an already available inverse of <code>this</code> matrix, the method {@link #perspectiveInvOrigin(Vector3d)}
+     * on the inverse of the matrix should be used instead.
+     * <p>
      * Reference: <a href="http://geomalgorithms.com/a05-_intersect-1.html">http://geomalgorithms.com</a>
      * <p>
      * Reference: <a href="http://gamedevs.org/uploads/fast-extraction-viewing-frustum-planes-from-world-view-projection-matrix.pdf">
@@ -4493,6 +4639,26 @@ public interface Matrix4dc {
      * @return origin
      */
     Vector3d perspectiveOrigin(Vector3d origin);
+
+    /**
+     * Compute the eye/origin of the inverse of the perspective frustum transformation defined by <code>this</code> matrix, 
+     * which can be the inverse of a projection matrix or the inverse of a combined modelview-projection matrix, and store the result
+     * in the given <code>dest</code>.
+     * <p>
+     * Note that this method will only work using perspective projections obtained via one of the
+     * perspective methods, such as {@link #perspective(double, double, double, double, Matrix4d) perspective()}
+     * or {@link #frustum(double, double, double, double, double, double, Matrix4d) frustum()}.
+     * <p>
+     * If the inverse of the modelview-projection matrix is not available, then calling {@link #perspectiveOrigin(Vector3d)}
+     * on the original modelview-projection matrix is preferred.
+     * 
+     * @see #perspectiveOrigin(Vector3d)
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3d perspectiveInvOrigin(Vector3d dest);
 
     /**
      * Return the vertical field-of-view angle in radians of this perspective transformation matrix.
@@ -5291,5 +5457,15 @@ public interface Matrix4dc {
      * @return <code>true</code> whether all of the matrix elements are equal; <code>false</code> otherwise
      */
     boolean equals(Matrix4dc m, double delta);
+
+    /**
+     * Determine whether all matrix elements are finite floating-point values, that
+     * is, they are not {@link Double#isNaN() NaN} and not
+     * {@link Double#isInfinite() infinity}.
+     *
+     * @return {@code true} if all components are finite floating-point values;
+     *         {@code false} otherwise
+     */
+    boolean isFinite();
 
 }

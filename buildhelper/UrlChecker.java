@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2017-2019 JOML
+ * Copyright (c) 2017-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -72,7 +72,7 @@ public class UrlChecker {
     }
 
     public static void main(String[] args) throws Exception {
-        boolean disabled = Boolean.valueOf(System.getProperty("urlcheck.disabled", "false"));
+        boolean disabled = Boolean.valueOf(System.getProperty("urlcheck.disabled", "false")).booleanValue();
         if (disabled) {
             System.out.println("Disabled URL checking.");
             return;

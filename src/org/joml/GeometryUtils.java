@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015-2019 Kai Burjack
+ * Copyright (c) 2015-2020 Kai Burjack
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -70,7 +70,7 @@ public class GeometryUtils {
             dest1.z = 0;
             mag = magZ;
         }
-        float len = 1.0f / (float) Math.sqrt(mag);
+        float len = Math.invsqrt(mag);
         dest1.x *= len;
         dest1.y *= len;
         dest1.z *= len;

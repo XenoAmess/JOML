@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015-2019 Richard Greenlees
+ * Copyright (c) 2015-2020 Richard Greenlees
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,10 +34,6 @@ import java.nio.FloatBuffer;
 //#endif
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.joml.Math;
-import org.joml.internal.*;
-import org.joml.internal.Runtime;
 
 /**
  * Contains the definition of an affine 4x3 matrix (4 columns, 3 rows) of doubles, and associated functions to transform
@@ -78,19 +74,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the {@link Matrix4x3dc} to copy the values from
      */
     public Matrix4x3d(Matrix4x3dc mat) {
-        m00 = mat.m00();
-        m01 = mat.m01();
-        m02 = mat.m02();
-        m10 = mat.m10();
-        m11 = mat.m11();
-        m12 = mat.m12();
-        m20 = mat.m20();
-        m21 = mat.m21();
-        m22 = mat.m22();
-        m30 = mat.m30();
-        m31 = mat.m31();
-        m32 = mat.m32();
-        properties = mat.properties();
+        set(mat);
     }
 
     /**
@@ -100,19 +84,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the {@link Matrix4x3fc} to copy the values from
      */
     public Matrix4x3d(Matrix4x3fc mat) {
-        m00 = mat.m00();
-        m01 = mat.m01();
-        m02 = mat.m02();
-        m10 = mat.m10();
-        m11 = mat.m11();
-        m12 = mat.m12();
-        m20 = mat.m20();
-        m21 = mat.m21();
-        m22 = mat.m22();
-        m30 = mat.m30();
-        m31 = mat.m31();
-        m32 = mat.m32();
-        properties = mat.properties();
+        set(mat);
     }
 
     /**
@@ -123,16 +95,18 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the {@link Matrix3dc}
      */
     public Matrix4x3d(Matrix3dc mat) {
-        m00 = mat.m00();
-        m01 = mat.m01();
-        m02 = mat.m02();
-        m10 = mat.m10();
-        m11 = mat.m11();
-        m12 = mat.m12();
-        m20 = mat.m20();
-        m21 = mat.m21();
-        m22 = mat.m22();
-        determineProperties();
+        set(mat);
+    }
+
+    /**
+     * Create a new {@link Matrix4x3d} by setting its left 3x3 submatrix to the values of the given {@link Matrix3fc}
+     * and the rest to identity.
+     * 
+     * @param mat
+     *          the {@link Matrix3dc}
+     */
+    public Matrix4x3d(Matrix3fc mat) {
+        set(mat);
     }
 
     /**
@@ -317,6 +291,11 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         return m32;
     }
 
+    Matrix4x3d _properties(int properties) {
+        this.properties = properties;
+        return this;
+    }
+
     /**
      * Set the value of the matrix element at column 0 and row 0 without updating the properties of the matrix.
      * 
@@ -324,7 +303,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m00(double m00) {
+    Matrix4x3d _m00(double m00) {
         this.m00 = m00;
         return this;
     }
@@ -335,7 +314,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m01(double m01) {
+    Matrix4x3d _m01(double m01) {
         this.m01 = m01;
         return this;
     }
@@ -346,7 +325,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m02(double m02) {
+    Matrix4x3d _m02(double m02) {
         this.m02 = m02;
         return this;
     }
@@ -357,7 +336,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m10(double m10) {
+    Matrix4x3d _m10(double m10) {
         this.m10 = m10;
         return this;
     }
@@ -368,7 +347,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m11(double m11) {
+    Matrix4x3d _m11(double m11) {
         this.m11 = m11;
         return this;
     }
@@ -379,7 +358,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m12(double m12) {
+    Matrix4x3d _m12(double m12) {
         this.m12 = m12;
         return this;
     }
@@ -390,7 +369,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m20(double m20) {
+    Matrix4x3d _m20(double m20) {
         this.m20 = m20;
         return this;
     }
@@ -401,7 +380,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m21(double m21) {
+    Matrix4x3d _m21(double m21) {
         this.m21 = m21;
         return this;
     }
@@ -412,7 +391,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m22(double m22) {
+    Matrix4x3d _m22(double m22) {
         this.m22 = m22;
         return this;
     }
@@ -423,7 +402,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m30(double m30) {
+    Matrix4x3d _m30(double m30) {
         this.m30 = m30;
         return this;
     }
@@ -434,7 +413,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m31(double m31) {
+    Matrix4x3d _m31(double m31) {
         this.m31 = m31;
         return this;
     }
@@ -445,7 +424,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      *          the new value
      * @return this
      */
-    public Matrix4x3d _m32(double m32) {
+    Matrix4x3d _m32(double m32) {
         this.m32 = m32;
         return this;
     }
@@ -762,8 +741,33 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         m30 = 0.0;
         m31 = 0.0;
         m32 = 0.0;
-        properties = 0;
-        return this;
+        return determineProperties();
+    }
+
+    /**
+     * Set the left 3x3 submatrix of this {@link Matrix4x3d} to the given {@link Matrix3fc} 
+     * and the rest to identity.
+     * 
+     * @see #Matrix4x3d(Matrix3fc)
+     * 
+     * @param mat
+     *          the {@link Matrix3fc}
+     * @return this
+     */
+    public Matrix4x3d set(Matrix3fc mat) {
+        m00 = mat.m00();
+        m01 = mat.m01();
+        m02 = mat.m02();
+        m10 = mat.m10();
+        m11 = mat.m11();
+        m12 = mat.m12();
+        m20 = mat.m20();
+        m21 = mat.m21();
+        m22 = mat.m22();
+        m30 = 0.0;
+        m31 = 0.0;
+        m32 = 0.0;
+        return determineProperties();
     }
 
     /**
@@ -795,8 +799,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         this.m30 = col3.x();
         this.m31 = col3.y();
         this.m32 = col3.z();
-        this.properties = 0;
-        return this;
+        return determineProperties();
     }
 
     /**
@@ -833,7 +836,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         double y = axisAngle.y;
         double z = axisAngle.z;
         double angle = axisAngle.angle;
-        double invLength = 1.0 / Math.sqrt(x*x + y*y + z*z);
+        double invLength = Math.invsqrt(x*x + y*y + z*z);
         x *= invLength;
         y *= invLength;
         z *= invLength;
@@ -874,7 +877,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         double y = axisAngle.y;
         double z = axisAngle.z;
         double angle = axisAngle.angle;
-        double invLength = 1.0 / Math.sqrt(x*x + y*y + z*z);
+        double invLength = Math.invsqrt(x*x + y*y + z*z);
         x *= invLength;
         y *= invLength;
         z *= invLength;
@@ -960,32 +963,27 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         return mulGeneric(right, dest);
     }
     private Matrix4x3d mulGeneric(Matrix4x3dc right, Matrix4x3d dest) {
-        double nm00 = m00 * right.m00() + m10 * right.m01() + m20 * right.m02();
-        double nm01 = m01 * right.m00() + m11 * right.m01() + m21 * right.m02();
-        double nm02 = m02 * right.m00() + m12 * right.m01() + m22 * right.m02();
-        double nm10 = m00 * right.m10() + m10 * right.m11() + m20 * right.m12();
-        double nm11 = m01 * right.m10() + m11 * right.m11() + m21 * right.m12();
-        double nm12 = m02 * right.m10() + m12 * right.m11() + m22 * right.m12();
-        double nm20 = m00 * right.m20() + m10 * right.m21() + m20 * right.m22();
-        double nm21 = m01 * right.m20() + m11 * right.m21() + m21 * right.m22();
-        double nm22 = m02 * right.m20() + m12 * right.m21() + m22 * right.m22();
-        double nm30 = m00 * right.m30() + m10 * right.m31() + m20 * right.m32() + m30;
-        double nm31 = m01 * right.m30() + m11 * right.m31() + m21 * right.m32() + m31;
-        double nm32 = m02 * right.m30() + m12 * right.m31() + m22 * right.m32() + m32;
-        dest.m00 = nm00;
-        dest.m01 = nm01;
-        dest.m02 = nm02;
-        dest.m10 = nm10;
-        dest.m11 = nm11;
-        dest.m12 = nm12;
-        dest.m20 = nm20;
-        dest.m21 = nm21;
-        dest.m22 = nm22;
-        dest.m30 = nm30;
-        dest.m31 = nm31;
-        dest.m32 = nm32;
-        dest.properties = this.properties & right.properties() & PROPERTY_ORTHONORMAL;
-        return dest;
+        double m00 = this.m00, m01 = this.m01, m02 = this.m02;
+        double m10 = this.m10, m11 = this.m11, m12 = this.m12;
+        double m20 = this.m20, m21 = this.m21, m22 = this.m22;
+        double rm00 = right.m00(), rm01 = right.m01(), rm02 = right.m02();
+        double rm10 = right.m10(), rm11 = right.m11(), rm12 = right.m12();
+        double rm20 = right.m20(), rm21 = right.m21(), rm22 = right.m22();
+        double rm30 = right.m30(), rm31 = right.m31(), rm32 = right.m32();
+        return dest
+        ._m00(Math.fma(m00, rm00, Math.fma(m10, rm01, m20 * rm02)))
+        ._m01(Math.fma(m01, rm00, Math.fma(m11, rm01, m21 * rm02)))
+        ._m02(Math.fma(m02, rm00, Math.fma(m12, rm01, m22 * rm02)))
+        ._m10(Math.fma(m00, rm10, Math.fma(m10, rm11, m20 * rm12)))
+        ._m11(Math.fma(m01, rm10, Math.fma(m11, rm11, m21 * rm12)))
+        ._m12(Math.fma(m02, rm10, Math.fma(m12, rm11, m22 * rm12)))
+        ._m20(Math.fma(m00, rm20, Math.fma(m10, rm21, m20 * rm22)))
+        ._m21(Math.fma(m01, rm20, Math.fma(m11, rm21, m21 * rm22)))
+        ._m22(Math.fma(m02, rm20, Math.fma(m12, rm21, m22 * rm22)))
+        ._m30(Math.fma(m00, rm30, Math.fma(m10, rm31, Math.fma(m20, rm32, m30))))
+        ._m31(Math.fma(m01, rm30, Math.fma(m11, rm31, Math.fma(m21, rm32, m31))))
+        ._m32(Math.fma(m02, rm30, Math.fma(m12, rm31, Math.fma(m22, rm32, m32))))
+        ._properties(properties & right.properties() & PROPERTY_ORTHONORMAL);
     }
 
     /**
@@ -1017,96 +1015,67 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         return mulGeneric(right, dest);
     }
     private Matrix4x3d mulGeneric(Matrix4x3fc right, Matrix4x3d dest) {
-        double nm00 = m00 * right.m00() + m10 * right.m01() + m20 * right.m02();
-        double nm01 = m01 * right.m00() + m11 * right.m01() + m21 * right.m02();
-        double nm02 = m02 * right.m00() + m12 * right.m01() + m22 * right.m02();
-        double nm10 = m00 * right.m10() + m10 * right.m11() + m20 * right.m12();
-        double nm11 = m01 * right.m10() + m11 * right.m11() + m21 * right.m12();
-        double nm12 = m02 * right.m10() + m12 * right.m11() + m22 * right.m12();
-        double nm20 = m00 * right.m20() + m10 * right.m21() + m20 * right.m22();
-        double nm21 = m01 * right.m20() + m11 * right.m21() + m21 * right.m22();
-        double nm22 = m02 * right.m20() + m12 * right.m21() + m22 * right.m22();
-        double nm30 = m00 * right.m30() + m10 * right.m31() + m20 * right.m32() + m30;
-        double nm31 = m01 * right.m30() + m11 * right.m31() + m21 * right.m32() + m31;
-        double nm32 = m02 * right.m30() + m12 * right.m31() + m22 * right.m32() + m32;
-        dest.m00 = nm00;
-        dest.m01 = nm01;
-        dest.m02 = nm02;
-        dest.m10 = nm10;
-        dest.m11 = nm11;
-        dest.m12 = nm12;
-        dest.m20 = nm20;
-        dest.m21 = nm21;
-        dest.m22 = nm22;
-        dest.m30 = nm30;
-        dest.m31 = nm31;
-        dest.m32 = nm32;
-        dest.properties = this.properties & right.properties() & PROPERTY_ORTHONORMAL;
-        return dest;
+        double m00 = this.m00, m01 = this.m01, m02 = this.m02;
+        double m10 = this.m10, m11 = this.m11, m12 = this.m12;
+        double m20 = this.m20, m21 = this.m21, m22 = this.m22;
+        double rm00 = right.m00(), rm01 = right.m01(), rm02 = right.m02();
+        double rm10 = right.m10(), rm11 = right.m11(), rm12 = right.m12();
+        double rm20 = right.m20(), rm21 = right.m21(), rm22 = right.m22();
+        double rm30 = right.m30(), rm31 = right.m31(), rm32 = right.m32();
+        return dest
+        ._m00(Math.fma(m00, rm00, Math.fma(m10, rm01, m20 * rm02)))
+        ._m01(Math.fma(m01, rm00, Math.fma(m11, rm01, m21 * rm02)))
+        ._m02(Math.fma(m02, rm00, Math.fma(m12, rm01, m22 * rm02)))
+        ._m10(Math.fma(m00, rm10, Math.fma(m10, rm11, m20 * rm12)))
+        ._m11(Math.fma(m01, rm10, Math.fma(m11, rm11, m21 * rm12)))
+        ._m12(Math.fma(m02, rm10, Math.fma(m12, rm11, m22 * rm12)))
+        ._m20(Math.fma(m00, rm20, Math.fma(m10, rm21, m20 * rm22)))
+        ._m21(Math.fma(m01, rm20, Math.fma(m11, rm21, m21 * rm22)))
+        ._m22(Math.fma(m02, rm20, Math.fma(m12, rm21, m22 * rm22)))
+        ._m30(Math.fma(m00, rm30, Math.fma(m10, rm31, Math.fma(m20, rm32, m30))))
+        ._m31(Math.fma(m01, rm30, Math.fma(m11, rm31, Math.fma(m21, rm32, m31))))
+        ._m32(Math.fma(m02, rm30, Math.fma(m12, rm31, Math.fma(m22, rm32, m32))))
+        ._properties(properties & right.properties() & PROPERTY_ORTHONORMAL);
     }
 
     /* (non-Javadoc)
      * @see org.joml.Matrix4x3dc#mulTranslation(org.joml.Matrix4x3dc, org.joml.Matrix4x3d)
      */
     public Matrix4x3d mulTranslation(Matrix4x3dc right, Matrix4x3d dest) {
-        double nm00 = right.m00();
-        double nm01 = right.m01();
-        double nm02 = right.m02();
-        double nm10 = right.m10();
-        double nm11 = right.m11();
-        double nm12 = right.m12();
-        double nm20 = right.m20();
-        double nm21 = right.m21();
-        double nm22 = right.m22();
-        double nm30 = right.m30() + m30;
-        double nm31 = right.m31() + m31;
-        double nm32 = right.m32() + m32;
-        dest.m00 = nm00;
-        dest.m01 = nm01;
-        dest.m02 = nm02;
-        dest.m10 = nm10;
-        dest.m11 = nm11;
-        dest.m12 = nm12;
-        dest.m20 = nm20;
-        dest.m21 = nm21;
-        dest.m22 = nm22;
-        dest.m30 = nm30;
-        dest.m31 = nm31;
-        dest.m32 = nm32;
-        dest.properties = right.properties() & PROPERTY_ORTHONORMAL;
-        return dest;
+        return dest
+        ._m00(right.m00())
+        ._m01(right.m01())
+        ._m02(right.m02())
+        ._m10(right.m10())
+        ._m11(right.m11())
+        ._m12(right.m12())
+        ._m20(right.m20())
+        ._m21(right.m21())
+        ._m22(right.m22())
+        ._m30(right.m30() + m30)
+        ._m31(right.m31() + m31)
+        ._m32(right.m32() + m32)
+        ._properties(right.properties() & PROPERTY_ORTHONORMAL);
     }
 
     /* (non-Javadoc)
      * @see org.joml.Matrix4x3dc#mulTranslation(org.joml.Matrix4x3fc, org.joml.Matrix4x3d)
      */
     public Matrix4x3d mulTranslation(Matrix4x3fc right, Matrix4x3d dest) {
-        double nm00 = right.m00();
-        double nm01 = right.m01();
-        double nm02 = right.m02();
-        double nm10 = right.m10();
-        double nm11 = right.m11();
-        double nm12 = right.m12();
-        double nm20 = right.m20();
-        double nm21 = right.m21();
-        double nm22 = right.m22();
-        double nm30 = right.m30() + m30;
-        double nm31 = right.m31() + m31;
-        double nm32 = right.m32() + m32;
-        dest.m00 = nm00;
-        dest.m01 = nm01;
-        dest.m02 = nm02;
-        dest.m10 = nm10;
-        dest.m11 = nm11;
-        dest.m12 = nm12;
-        dest.m20 = nm20;
-        dest.m21 = nm21;
-        dest.m22 = nm22;
-        dest.m30 = nm30;
-        dest.m31 = nm31;
-        dest.m32 = nm32;
-        dest.properties = right.properties() & PROPERTY_ORTHONORMAL;
-        return dest;
+        return dest
+        ._m00(right.m00())
+        ._m01(right.m01())
+        ._m02(right.m02())
+        ._m10(right.m10())
+        ._m11(right.m11())
+        ._m12(right.m12())
+        ._m20(right.m20())
+        ._m21(right.m21())
+        ._m22(right.m22())
+        ._m30(right.m30() + m30)
+        ._m31(right.m31() + m31)
+        ._m32(right.m32() + m32)
+        ._properties(right.properties() & PROPERTY_ORTHONORMAL);
     }
 
     /**
@@ -1153,7 +1122,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         dest.m30 = nm30;
         dest.m31 = nm31;
         dest.m32 = nm32;
-        dest.properties = 0;
+        dest.properties = (this.properties & view.properties() & PROPERTY_ORTHONORMAL);
         return dest;
     }
 
@@ -1178,19 +1147,20 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      * @see org.joml.Matrix4x3dc#fma(org.joml.Matrix4x3dc, double, org.joml.Matrix4x3d)
      */
     public Matrix4x3d fma(Matrix4x3dc other, double otherFactor, Matrix4x3d dest) {
-        dest.m00 = m00 + other.m00() * otherFactor;
-        dest.m01 = m01 + other.m01() * otherFactor;
-        dest.m02 = m02 + other.m02() * otherFactor;
-        dest.m10 = m10 + other.m10() * otherFactor;
-        dest.m11 = m11 + other.m11() * otherFactor;
-        dest.m12 = m12 + other.m12() * otherFactor;
-        dest.m20 = m20 + other.m20() * otherFactor;
-        dest.m21 = m21 + other.m21() * otherFactor;
-        dest.m22 = m22 + other.m22() * otherFactor;
-        dest.m30 = m30 + other.m30() * otherFactor;
-        dest.m31 = m31 + other.m31() * otherFactor;
-        dest.m32 = m32 + other.m32() * otherFactor;
-        dest.properties = 0;
+        dest
+        ._m00(Math.fma(other.m00(), otherFactor, m00))
+        ._m01(Math.fma(other.m01(), otherFactor, m01))
+        ._m02(Math.fma(other.m02(), otherFactor, m02))
+        ._m10(Math.fma(other.m10(), otherFactor, m10))
+        ._m11(Math.fma(other.m11(), otherFactor, m11))
+        ._m12(Math.fma(other.m12(), otherFactor, m12))
+        ._m20(Math.fma(other.m20(), otherFactor, m20))
+        ._m21(Math.fma(other.m21(), otherFactor, m21))
+        ._m22(Math.fma(other.m22(), otherFactor, m22))
+        ._m30(Math.fma(other.m30(), otherFactor, m30))
+        ._m31(Math.fma(other.m31(), otherFactor, m31))
+        ._m32(Math.fma(other.m32(), otherFactor, m32))
+        ._properties(0);
         return dest;
     }
 
@@ -1215,19 +1185,20 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      * @see org.joml.Matrix4x3dc#fma(org.joml.Matrix4x3fc, double, org.joml.Matrix4x3d)
      */
     public Matrix4x3d fma(Matrix4x3fc other, double otherFactor, Matrix4x3d dest) {
-        dest.m00 = m00 + other.m00() * otherFactor;
-        dest.m01 = m01 + other.m01() * otherFactor;
-        dest.m02 = m02 + other.m02() * otherFactor;
-        dest.m10 = m10 + other.m10() * otherFactor;
-        dest.m11 = m11 + other.m11() * otherFactor;
-        dest.m12 = m12 + other.m12() * otherFactor;
-        dest.m20 = m20 + other.m20() * otherFactor;
-        dest.m21 = m21 + other.m21() * otherFactor;
-        dest.m22 = m22 + other.m22() * otherFactor;
-        dest.m30 = m30 + other.m30() * otherFactor;
-        dest.m31 = m31 + other.m31() * otherFactor;
-        dest.m32 = m32 + other.m32() * otherFactor;
-        dest.properties = 0;
+        dest
+        ._m00(Math.fma(other.m00(), otherFactor, m00))
+        ._m01(Math.fma(other.m01(), otherFactor, m01))
+        ._m02(Math.fma(other.m02(), otherFactor, m02))
+        ._m10(Math.fma(other.m10(), otherFactor, m10))
+        ._m11(Math.fma(other.m11(), otherFactor, m11))
+        ._m12(Math.fma(other.m12(), otherFactor, m12))
+        ._m20(Math.fma(other.m20(), otherFactor, m20))
+        ._m21(Math.fma(other.m21(), otherFactor, m21))
+        ._m22(Math.fma(other.m22(), otherFactor, m22))
+        ._m30(Math.fma(other.m30(), otherFactor, m30))
+        ._m31(Math.fma(other.m31(), otherFactor, m31))
+        ._m32(Math.fma(other.m32(), otherFactor, m32))
+        ._properties(0);
         return dest;
     }
 
@@ -1435,8 +1406,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         this.m12 = m12;
         this.m22 = m22;
         this.m32 = m32;
-        properties = 0;
-        return this;
+        return determineProperties();
     }
 
     /**
@@ -1469,8 +1439,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         m30 = m[off+9];
         m31 = m[off+10];
         m32 = m[off+11];
-        properties = 0;
-        return this;
+        return determineProperties();
     }
 
     /**
@@ -1522,8 +1491,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         m30 = m[off+9];
         m31 = m[off+10];
         m32 = m[off+11];
-        properties = 0;
-        return this;
+        return determineProperties();
     }
 
     /**
@@ -1560,8 +1528,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      */
     public Matrix4x3d set(DoubleBuffer buffer) {
         MemUtil.INSTANCE.get(this, buffer.position(), buffer);
-        properties = 0;
-        return this;
+        return determineProperties();
     }
 
     /**
@@ -1578,8 +1545,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      */
     public Matrix4x3d set(FloatBuffer buffer) {
         MemUtil.INSTANCE.getf(this, buffer.position(), buffer);
-        properties = 0;
-        return this;
+        return determineProperties();
     }
 
     /**
@@ -1596,8 +1562,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      */
     public Matrix4x3d set(ByteBuffer buffer) {
         MemUtil.INSTANCE.get(this, buffer.position(), buffer);
-        properties = 0;
-        return this;
+        return determineProperties();
     }
 
     /**
@@ -1614,8 +1579,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      */
     public Matrix4x3d setFloats(ByteBuffer buffer) {
         MemUtil.INSTANCE.getf(this, buffer.position(), buffer);
-        properties = 0;
-        return this;
+        return determineProperties();
     }
 //#endif
 
@@ -1635,9 +1599,8 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
     public Matrix4x3d setFromAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.get(this, address);
-        return this;
+        MemUtil.MemUtilUnsafe.get(this, address);
+        return determineProperties();
     }
 //#endif
 
@@ -1954,9 +1917,9 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      * @return the string representation
      */
     public String toString(NumberFormat formatter) {
-        return formatter.format(m00) + " " + formatter.format(m10) + " " + formatter.format(m20) + " " + formatter.format(m30) + "\n"
-             + formatter.format(m01) + " " + formatter.format(m11) + " " + formatter.format(m21) + " " + formatter.format(m31) + "\n"
-             + formatter.format(m02) + " " + formatter.format(m12) + " " + formatter.format(m22) + " " + formatter.format(m32) + "\n";
+        return Runtime.format(m00, formatter) + " " + Runtime.format(m10, formatter) + " " + Runtime.format(m20, formatter) + " " + Runtime.format(m30, formatter) + "\n"
+             + Runtime.format(m01, formatter) + " " + Runtime.format(m11, formatter) + " " + Runtime.format(m21, formatter) + " " + Runtime.format(m31, formatter) + "\n"
+             + Runtime.format(m02, formatter) + " " + Runtime.format(m12, formatter) + " " + Runtime.format(m22, formatter) + " " + Runtime.format(m32, formatter) + "\n";
     }
 
     /**
@@ -2069,8 +2032,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
     public Matrix4x3dc getToAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.put(this, address);
+        MemUtil.MemUtilUnsafe.put(this, address);
         return this;
     }
 //#endif
@@ -2333,7 +2295,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         m00 = x;
         m11 = y;
         m22 = z;
-        boolean one = Math.abs(x) == 1.0 && Math.abs(y) == 1.0 && Math.abs(z) == 1.0;
+        boolean one = Math.absEqualsOne(x) && Math.absEqualsOne(y) && Math.absEqualsOne(z);
         properties = one ? PROPERTY_ORTHONORMAL : 0;
         return this;
     }
@@ -2378,11 +2340,11 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      * @return this
      */
     public Matrix4x3d rotation(double angle, double x, double y, double z) {
-        if (y == 0.0 && z == 0.0 && Math.abs(x) == 1.0)
+        if (y == 0.0 && z == 0.0 && Math.absEqualsOne(x))
             return rotationX(x * angle);
-        else if (x == 0.0 && z == 0.0 && Math.abs(y) == 1.0)
+        else if (x == 0.0 && z == 0.0 && Math.absEqualsOne(y))
             return rotationY(y * angle);
-        else if (x == 0.0 && y == 0.0 && Math.abs(z) == 1.0)
+        else if (x == 0.0 && y == 0.0 && Math.absEqualsOne(z))
             return rotationZ(z * angle);
         return rotationInternal(angle, x, y, z);
     }
@@ -3145,11 +3107,11 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         return rotateGeneric(ang, x, y, z, dest);
     }
     private Matrix4x3d rotateGeneric(double ang, double x, double y, double z, Matrix4x3d dest) {
-        if (y == 0.0 && z == 0.0 && Math.abs(x) == 1.0)
+        if (y == 0.0 && z == 0.0 && Math.absEqualsOne(x))
             return rotateX(x * ang, dest);
-        else if (x == 0.0 && z == 0.0 && Math.abs(y) == 1.0)
+        else if (x == 0.0 && z == 0.0 && Math.absEqualsOne(y))
             return rotateY(y * ang, dest);
-        else if (x == 0.0 && y == 0.0 && Math.abs(z) == 1.0)
+        else if (x == 0.0 && y == 0.0 && Math.absEqualsOne(z))
             return rotateZ(z * ang, dest);
         return rotateGenericInternal(ang, x, y, z, dest);
     }
@@ -3264,11 +3226,11 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      */
     public Matrix4x3d rotateTranslation(double ang, double x, double y, double z, Matrix4x3d dest) {
         double tx = m30, ty = m31, tz = m32;
-        if (y == 0.0 && z == 0.0 && Math.abs(x) == 1.0)
+        if (y == 0.0 && z == 0.0 && Math.absEqualsOne(x))
             return dest.rotationX(x * ang).setTranslation(tx, ty, tz);
-        else if (x == 0.0 && z == 0.0 && Math.abs(y) == 1.0)
+        else if (x == 0.0 && z == 0.0 && Math.absEqualsOne(y))
             return dest.rotationY(y * ang).setTranslation(tx, ty, tz);
-        else if (x == 0.0 && y == 0.0 && Math.abs(z) == 1.0)
+        else if (x == 0.0 && y == 0.0 && Math.absEqualsOne(z))
             return dest.rotationZ(z * ang).setTranslation(tx, ty, tz);
         return rotateTranslationInternal(ang, x, y, z, dest);
     }
@@ -3367,19 +3329,20 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         double nm10 = m00 * rm10 + m10 * rm11 + m20 * rm12;
         double nm11 = m01 * rm10 + m11 * rm11 + m21 * rm12;
         double nm12 = m02 * rm10 + m12 * rm11 + m22 * rm12;
-        dest._m20(m00 * rm20 + m10 * rm21 + m20 * rm22);
-        dest._m21(m01 * rm20 + m11 * rm21 + m21 * rm22);
-        dest._m22(m02 * rm20 + m12 * rm21 + m22 * rm22);
-        dest._m00(nm00);
-        dest._m01(nm01);
-        dest._m02(nm02);
-        dest._m10(nm10);
-        dest._m11(nm11);
-        dest._m12(nm12);
-        dest._m30(-nm00 * ox - nm10 * oy - m20 * oz + tm30);
-        dest._m31(-nm01 * ox - nm11 * oy - m21 * oz + tm31);
-        dest._m32(-nm02 * ox - nm12 * oy - m22 * oz + tm32);
-        dest.properties = properties & ~(PROPERTY_IDENTITY | PROPERTY_TRANSLATION);
+        dest
+        ._m20(m00 * rm20 + m10 * rm21 + m20 * rm22)
+        ._m21(m01 * rm20 + m11 * rm21 + m21 * rm22)
+        ._m22(m02 * rm20 + m12 * rm21 + m22 * rm22)
+        ._m00(nm00)
+        ._m01(nm01)
+        ._m02(nm02)
+        ._m10(nm10)
+        ._m11(nm11)
+        ._m12(nm12)
+        ._m30(-nm00 * ox - nm10 * oy - m20 * oz + tm30)
+        ._m31(-nm01 * ox - nm11 * oy - m21 * oz + tm31)
+        ._m32(-nm02 * ox - nm12 * oy - m22 * oz + tm32)
+        ._properties(properties & ~(PROPERTY_IDENTITY | PROPERTY_TRANSLATION));
         return dest;
     }
 
@@ -3470,11 +3433,11 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      * @return dest
      */
     public Matrix4x3d rotateLocal(double ang, double x, double y, double z, Matrix4x3d dest) {
-        if (y == 0.0 && z == 0.0 && Math.abs(x) == 1.0)
+        if (y == 0.0 && z == 0.0 && Math.absEqualsOne(x))
             return rotateLocalX(x * ang, dest);
-        else if (x == 0.0 && z == 0.0 && Math.abs(y) == 1.0)
+        else if (x == 0.0 && z == 0.0 && Math.absEqualsOne(y))
             return rotateLocalY(y * ang, dest);
-        else if (x == 0.0 && y == 0.0 && Math.abs(z) == 1.0)
+        else if (x == 0.0 && y == 0.0 && Math.absEqualsOne(z))
             return rotateLocalZ(z * ang, dest);
         return rotateLocalInternal(ang, x, y, z, dest);
     }
@@ -6166,8 +6129,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
     private Matrix4x3d normalOrthonormal(Matrix4x3d dest) {
         if (dest != this)
             dest.set(this);
-        dest.properties = PROPERTY_ORTHONORMAL;
-        return dest;
+        return dest._properties(PROPERTY_ORTHONORMAL);
     }
     private Matrix4x3d normalGeneric(Matrix4x3d dest) {
         double m00m11 = m00 * m11;
@@ -6213,8 +6175,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         return normalGeneric(dest);
     }
     private Matrix3d normalOrthonormal(Matrix3d dest) {
-        dest.set(this);
-        return dest;
+        return dest.set(this);
     }
     private Matrix3d normalGeneric(Matrix3d dest) {
         double m00m11 = m00 * m11;
@@ -6329,9 +6290,9 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      * @see org.joml.Matrix4x3dc#normalize3x3(org.joml.Matrix4x3d)
      */
     public Matrix4x3d normalize3x3(Matrix4x3d dest) {
-        double invXlen = 1.0 / Math.sqrt(m00 * m00 + m01 * m01 + m02 * m02);
-        double invYlen = 1.0 / Math.sqrt(m10 * m10 + m11 * m11 + m12 * m12);
-        double invZlen = 1.0 / Math.sqrt(m20 * m20 + m21 * m21 + m22 * m22);
+        double invXlen = Math.invsqrt(m00 * m00 + m01 * m01 + m02 * m02);
+        double invYlen = Math.invsqrt(m10 * m10 + m11 * m11 + m12 * m12);
+        double invZlen = Math.invsqrt(m20 * m20 + m21 * m21 + m22 * m22);
         dest.m00 = m00 * invXlen; dest.m01 = m01 * invXlen; dest.m02 = m02 * invXlen;
         dest.m10 = m10 * invYlen; dest.m11 = m11 * invYlen; dest.m12 = m12 * invYlen;
         dest.m20 = m20 * invZlen; dest.m21 = m21 * invZlen; dest.m22 = m22 * invZlen;
@@ -6342,9 +6303,9 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      * @see org.joml.Matrix4x3dc#normalize3x3(org.joml.Matrix3d)
      */
     public Matrix3d normalize3x3(Matrix3d dest) {
-        double invXlen = 1.0 / Math.sqrt(m00 * m00 + m01 * m01 + m02 * m02);
-        double invYlen = 1.0 / Math.sqrt(m10 * m10 + m11 * m11 + m12 * m12);
-        double invZlen = 1.0 / Math.sqrt(m20 * m20 + m21 * m21 + m22 * m22);
+        double invXlen = Math.invsqrt(m00 * m00 + m01 * m01 + m02 * m02);
+        double invYlen = Math.invsqrt(m10 * m10 + m11 * m11 + m12 * m12);
+        double invZlen = Math.invsqrt(m20 * m20 + m21 * m21 + m22 * m22);
         dest.m00(m00 * invXlen); dest.m01(m01 * invXlen); dest.m02(m02 * invXlen);
         dest.m10(m10 * invYlen); dest.m11(m11 * invYlen); dest.m12(m12 * invYlen);
         dest.m20(m20 * invZlen); dest.m21(m21 * invZlen); dest.m22(m22 * invZlen);
@@ -6454,7 +6415,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      * @see org.joml.Matrix4x3dc#reflect(double, double, double, double, double, double, org.joml.Matrix4x3d)
      */
     public Matrix4x3d reflect(double nx, double ny, double nz, double px, double py, double pz, Matrix4x3d dest) {
-        double invLength = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
+        double invLength = Math.invsqrt(nx * nx + ny * ny + nz * nz);
         double nnx = nx * invLength;
         double nny = ny * invLength;
         double nnz = nz * invLength;
@@ -6579,7 +6540,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      * @return this
      */
     public Matrix4x3d reflection(double nx, double ny, double nz, double px, double py, double pz) {
-        double invLength = 1.0 / Math.sqrt(nx * nx + ny * ny + nz * nz);
+        double invLength = Math.invsqrt(nx * nx + ny * ny + nz * nz);
         double nnx = nx * invLength;
         double nny = ny * invLength;
         double nnz = nz * invLength;
@@ -7949,7 +7910,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
             return setLookAlong(dirX, dirY, dirZ, upX, upY, upZ);
 
         // Normalize direction
-        double invDirLength = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX *= -invDirLength;
         dirY *= -invDirLength;
         dirZ *= -invDirLength;
@@ -7959,7 +7920,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         leftY = upZ * dirX - upX * dirZ;
         leftZ = upX * dirY - upY * dirX;
         // normalize left
-        double invLeftLength = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -8097,7 +8058,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
     public Matrix4x3d setLookAlong(double dirX, double dirY, double dirZ,
                                    double upX, double upY, double upZ) {
         // Normalize direction
-        double invDirLength = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX *= -invDirLength;
         dirY *= -invDirLength;
         dirZ *= -invDirLength;
@@ -8107,7 +8068,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         leftY = upZ * dirX - upX * dirZ;
         leftZ = upX * dirY - upY * dirX;
         // normalize left
-        double invLeftLength = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -8198,7 +8159,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         dirY = eyeY - centerY;
         dirZ = eyeZ - centerZ;
         // Normalize direction
-        double invDirLength = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX *= invDirLength;
         dirY *= invDirLength;
         dirZ *= invDirLength;
@@ -8208,7 +8169,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         leftY = upZ * dirX - upX * dirZ;
         leftZ = upX * dirY - upY * dirX;
         // normalize left
-        double invLeftLength = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -8343,7 +8304,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         dirY = eyeY - centerY;
         dirZ = eyeZ - centerZ;
         // Normalize direction
-        double invDirLength = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX *= invDirLength;
         dirY *= invDirLength;
         dirZ *= invDirLength;
@@ -8353,7 +8314,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         leftY = upZ * dirX - upX * dirZ;
         leftZ = upX * dirY - upY * dirX;
         // normalize left
-        double invLeftLength = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -8509,7 +8470,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         dirY = centerY - eyeY;
         dirZ = centerZ - eyeZ;
         // Normalize direction
-        double invDirLength = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX *= invDirLength;
         dirY *= invDirLength;
         dirZ *= invDirLength;
@@ -8519,7 +8480,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         leftY = upZ * dirX - upX * dirZ;
         leftZ = upX * dirY - upY * dirX;
         // normalize left
-        double invLeftLength = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -8652,7 +8613,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         dirY = centerY - eyeY;
         dirZ = centerZ - eyeZ;
         // Normalize direction
-        double invDirLength = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX *= invDirLength;
         dirY *= invDirLength;
         dirZ *= invDirLength;
@@ -8662,7 +8623,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         leftY = upZ * dirX - upX * dirZ;
         leftZ = upX * dirY - upY * dirX;
         // normalize left
-        double invLeftLength = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -8934,7 +8895,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      */
     public Matrix4x3d shadow(double lightX, double lightY, double lightZ, double lightW, double a, double b, double c, double d, Matrix4x3d dest) {
         // normalize plane
-        double invPlaneLen = 1.0 / Math.sqrt(a*a + b*b + c*c);
+        double invPlaneLen = Math.invsqrt(a*a + b*b + c*c);
         double an = a * invPlaneLen;
         double bn = b * invPlaneLen;
         double cn = c * invPlaneLen;
@@ -9087,7 +9048,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         double leftY = up.z() * dirX - up.x() * dirZ;
         double leftZ = up.x() * dirY - up.y() * dirX;
         // normalize left
-        double invLeftLen = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLen = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLen;
         leftY *= invLeftLen;
         leftZ *= invLeftLen;
@@ -9097,7 +9058,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         dirY = leftZ * up.x() - leftX * up.z();
         dirZ = leftX * up.y() - leftY * up.x();
         // normalize dir
-        double invDirLen = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLen = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX *= invDirLen;
         dirY *= invDirLen;
         dirZ *= invDirLen;
@@ -9143,7 +9104,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         double dirY = targetPos.y() - objPos.y();
         double dirZ = targetPos.z() - objPos.z();
         // normalize dir
-        double invDirLen = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLen = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX *= invDirLen;
         dirY *= invDirLen;
         dirZ *= invDirLen;
@@ -9152,7 +9113,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         double leftY = up.z() * dirX - up.x() * dirZ;
         double leftZ = up.x() * dirY - up.y() * dirX;
         // normalize left
-        double invLeftLen = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLen = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLen;
         leftY *= invLeftLen;
         leftZ *= invLeftLen;
@@ -9202,7 +9163,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         double x = -toDirY;
         double y = toDirX;
         double w = Math.sqrt(toDirX * toDirX + toDirY * toDirY + toDirZ * toDirZ) + toDirZ;
-        double invNorm = 1.0 / Math.sqrt(x * x + y * y + w * w);
+        double invNorm = Math.invsqrt(x * x + y * y + w * w);
         x *= invNorm;
         y *= invNorm;
         w *= invNorm;
@@ -9597,18 +9558,18 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      * @see org.joml.Matrix4x3dc#lerp(org.joml.Matrix4x3dc, double, org.joml.Matrix4x3d)
      */
     public Matrix4x3d lerp(Matrix4x3dc other, double t, Matrix4x3d dest) {
-        dest.m00 = m00 + (other.m00() - m00) * t;
-        dest.m01 = m01 + (other.m01() - m01) * t;
-        dest.m02 = m02 + (other.m02() - m02) * t;
-        dest.m10 = m10 + (other.m10() - m10) * t;
-        dest.m11 = m11 + (other.m11() - m11) * t;
-        dest.m12 = m12 + (other.m12() - m12) * t;
-        dest.m20 = m20 + (other.m20() - m20) * t;
-        dest.m21 = m21 + (other.m21() - m21) * t;
-        dest.m22 = m22 + (other.m22() - m22) * t;
-        dest.m30 = m30 + (other.m30() - m30) * t;
-        dest.m31 = m31 + (other.m31() - m31) * t;
-        dest.m32 = m32 + (other.m32() - m32) * t;
+        dest.m00 = Math.fma(other.m00() - m00, t, m00);
+        dest.m01 = Math.fma(other.m01() - m01, t, m01);
+        dest.m02 = Math.fma(other.m02() - m02, t, m02);
+        dest.m10 = Math.fma(other.m10() - m10, t, m10);
+        dest.m11 = Math.fma(other.m11() - m11, t, m11);
+        dest.m12 = Math.fma(other.m12() - m12, t, m12);
+        dest.m20 = Math.fma(other.m20() - m20, t, m20);
+        dest.m21 = Math.fma(other.m21() - m21, t, m21);
+        dest.m22 = Math.fma(other.m22() - m22, t, m22);
+        dest.m30 = Math.fma(other.m30() - m30, t, m30);
+        dest.m31 = Math.fma(other.m31() - m31, t, m31);
+        dest.m32 = Math.fma(other.m32() - m32, t, m32);
         dest.properties = properties & other.properties();
         return dest;
     }
@@ -9741,7 +9702,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      */
     public Matrix4x3d rotateTowards(double dirX, double dirY, double dirZ, double upX, double upY, double upZ, Matrix4x3d dest) {
         // Normalize direction
-        double invDirLength = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         double ndirX = dirX * invDirLength;
         double ndirY = dirY * invDirLength;
         double ndirZ = dirZ * invDirLength;
@@ -9751,7 +9712,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         leftY = upZ * ndirX - upX * ndirZ;
         leftZ = upX * ndirY - upY * ndirX;
         // normalize left
-        double invLeftLength = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -9840,7 +9801,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      */
     public Matrix4x3d rotationTowards(double dirX, double dirY, double dirZ, double upX, double upY, double upZ) {
         // Normalize direction
-        double invDirLength = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         double ndirX = dirX * invDirLength;
         double ndirY = dirY * invDirLength;
         double ndirZ = dirZ * invDirLength;
@@ -9850,7 +9811,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         leftY = upZ * ndirX - upX * ndirZ;
         leftZ = upX * ndirY - upY * ndirX;
         // normalize left
-        double invLeftLength = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -9928,7 +9889,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
      */
     public Matrix4x3d translationRotateTowards(double posX, double posY, double posZ, double dirX, double dirY, double dirZ, double upX, double upY, double upZ) {
         // Normalize direction
-        double invDirLength = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         double ndirX = dirX * invDirLength;
         double ndirY = dirY * invDirLength;
         double ndirZ = dirZ * invDirLength;
@@ -9938,7 +9899,7 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         leftY = upZ * ndirX - upX * ndirZ;
         leftZ = upX * ndirY - upY * ndirX;
         // normalize left
-        double invLeftLength = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -10053,6 +10014,13 @@ public class Matrix4x3d implements Externalizable, Matrix4x3dc {
         dest.m32 = m32;
         dest.properties = 0;
         return dest;
+    }
+
+    public boolean isFinite() {
+        return Math.isFinite(m00) && Math.isFinite(m01) && Math.isFinite(m02) &&
+               Math.isFinite(m10) && Math.isFinite(m11) && Math.isFinite(m12) &&
+               Math.isFinite(m20) && Math.isFinite(m21) && Math.isFinite(m22) &&
+               Math.isFinite(m30) && Math.isFinite(m31) && Math.isFinite(m32);
     }
 
 }

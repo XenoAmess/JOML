@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -1147,6 +1147,17 @@ public interface Matrix3dc {
     double get(int column, int row);
 
     /**
+     * Get the matrix element value at the given row and column.
+     * 
+     * @param row
+     *          the row index in <code>[0..2]</code>
+     * @param column
+     *          the colum index in <code>[0..2]</code>
+     * @return the element value
+     */
+    double getRowColumn(int column, int row);
+
+    /**
      * Compute a normal matrix from <code>this</code> matrix and store it into <code>dest</code>.
      * <p>
      * The normal matrix of <code>m</code> is the transpose of the inverse of <code>m</code>.
@@ -1569,5 +1580,15 @@ public interface Matrix3dc {
      * @return this
      */
     Matrix3d reflect(Vector3dc normal, Matrix3d dest);
+
+    /**
+     * Determine whether all matrix elements are finite floating-point values, that
+     * is, they are not {@link Double#isNaN() NaN} and not
+     * {@link Double#isInfinite() infinity}.
+     *
+     * @return {@code true} if all components are finite floating-point values;
+     *         {@code false} otherwise
+     */
+    boolean isFinite();
 
 }

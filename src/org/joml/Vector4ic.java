@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -245,6 +245,18 @@ public interface Vector4ic {
     Vector4i div(float scalar, Vector4i dest);
 
     /**
+     * Divide all components of this {@link Vector4i} by the given scalar value
+     * and store the result in <code>dest</code>.
+     *
+     * @param scalar
+     *          the scalar to divide by
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4i div(int scalar, Vector4i dest);
+
+    /**
      * Return the length squared of this vector.
      *
      * @return the length squared
@@ -396,6 +408,16 @@ public interface Vector4ic {
      * @return the component index, within <code>[0..3]</code>
      */
     int minComponent();
+
+    /**
+     * Compute the absolute of each of this vector's components
+     * and store the result into <code>dest</code>.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4i absolute(Vector4i dest);
 
     /**
      * Compare the vector components of <code>this</code> vector with the given <code>(x, y, z, w)</code>

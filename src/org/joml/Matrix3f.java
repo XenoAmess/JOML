@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015-2019 Richard Greenlees
+ * Copyright (c) 2015-2020 Richard Greenlees
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,10 +33,6 @@ import java.nio.FloatBuffer;
 //#endif
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.joml.Math;
-import org.joml.internal.*;
-import org.joml.internal.Runtime;
 
 //#ifdef __GWT__
 import com.google.gwt.typedarrays.shared.Float32Array;
@@ -78,11 +74,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the {@link Matrix2fc}
      */
     public Matrix3f(Matrix2fc mat) {
-        if (mat instanceof Matrix2f) {
-            MemUtil.INSTANCE.copy((Matrix2f) mat, this);
-        } else {
-            setMatrix2fc(mat);
-        }
+        set(mat);
     }
 
     /**
@@ -92,11 +84,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the {@link Matrix3fc} to copy the values from
      */
     public Matrix3f(Matrix3fc mat) {
-        if (mat instanceof Matrix3f) {
-            MemUtil.INSTANCE.copy((Matrix3f) mat, this);
-        } else {
-            setMatrix3fc(mat);
-        }
+        set(mat);
     }
 
     /**
@@ -106,11 +94,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the {@link Matrix4fc} to copy the values from
      */
     public Matrix3f(Matrix4fc mat) {
-        if (mat instanceof Matrix4f) {
-            MemUtil.INSTANCE.copy((Matrix4f) mat, this);
-        } else {
-            setMatrix4fc(mat);
-        }
+        set(mat);
     }
 
     /**
@@ -178,13 +162,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the third column
      */
     public Matrix3f(Vector3fc col0, Vector3fc col1, Vector3fc col2) {
-        if (col0 instanceof Vector3f &&
-            col1 instanceof Vector3f &&
-            col2 instanceof Vector3f) {
-            MemUtil.INSTANCE.set(this, (Vector3f) col0, (Vector3f) col1, (Vector3f) col2);
-        } else {
-            setVector3fc(col0, col1, col2);
-        }
+        set(col0, col1, col2);
     }
 
     /* (non-Javadoc)
@@ -349,7 +327,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the new value
      * @return this
      */
-    public Matrix3f _m00(float m00) {
+    Matrix3f _m00(float m00) {
         this.m00 = m00;
         return this;
     }
@@ -360,7 +338,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the new value
      * @return this
      */
-    public Matrix3f _m01(float m01) {
+    Matrix3f _m01(float m01) {
         this.m01 = m01;
         return this;
     }
@@ -371,7 +349,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the new value
      * @return this
      */
-    public Matrix3f _m02(float m02) {
+    Matrix3f _m02(float m02) {
         this.m02 = m02;
         return this;
     }
@@ -382,7 +360,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the new value
      * @return this
      */
-    public Matrix3f _m10(float m10) {
+    Matrix3f _m10(float m10) {
         this.m10 = m10;
         return this;
     }
@@ -393,7 +371,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the new value
      * @return this
      */
-    public Matrix3f _m11(float m11) {
+    Matrix3f _m11(float m11) {
         this.m11 = m11;
         return this;
     }
@@ -404,7 +382,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the new value
      * @return this
      */
-    public Matrix3f _m12(float m12) {
+    Matrix3f _m12(float m12) {
         this.m12 = m12;
         return this;
     }
@@ -415,7 +393,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the new value
      * @return this
      */
-    public Matrix3f _m20(float m20) {
+    Matrix3f _m20(float m20) {
         this.m20 = m20;
         return this;
     }
@@ -426,7 +404,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the new value
      * @return this
      */
-    public Matrix3f _m21(float m21) {
+    Matrix3f _m21(float m21) {
         this.m21 = m21;
         return this;
     }
@@ -437,7 +415,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      *          the new value
      * @return this
      */
-    public Matrix3f _m22(float m22) {
+    Matrix3f _m22(float m22) {
         this.m22 = m22;
         return this;
     }
@@ -450,23 +428,32 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return this
      */
     public Matrix3f set(Matrix3fc m) {
-        if (m instanceof Matrix3f) {
-            MemUtil.INSTANCE.copy((Matrix3f) m, this);
-        } else {
-            setMatrix3fc(m);
-        }
-        return this;
+        return 
+        _m00(m.m00()).
+        _m01(m.m01()).
+        _m02(m.m02()).
+        _m10(m.m10()).
+        _m11(m.m11()).
+        _m12(m.m12()).
+        _m20(m.m20()).
+        _m21(m.m21()).
+        _m22(m.m22());
     }
-    private void setMatrix3fc(Matrix3fc mat) {
-        m00 = mat.m00();
-        m01 = mat.m01();
-        m02 = mat.m02();
-        m10 = mat.m10();
-        m11 = mat.m11();
-        m12 = mat.m12();
-        m20 = mat.m20();
-        m21 = mat.m21();
-        m22 = mat.m22();
+
+    /**
+     * Store the values of the transpose of the given matrix <code>m</code> into <code>this</code> matrix.
+     * 
+     * @param m
+     *          the matrix to copy the transposed values from
+     * @return this
+     */
+    public Matrix3f setTransposed(Matrix3fc m) {
+        float nm10 = m.m01(), nm12 = m.m21();
+        float nm20 = m.m02(), nm21 = m.m12();
+        return this
+        ._m00(m.m00())._m01(m.m10())._m02(m.m20())
+        ._m10(nm10)._m11(m.m11())._m12(nm12)
+        ._m20(nm20)._m21(nm21)._m22(m.m22());
     }
 
     /**
@@ -497,14 +484,6 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return this
      */
     public Matrix3f set(Matrix4fc mat) {
-        if (mat instanceof Matrix4f) {
-            MemUtil.INSTANCE.copy((Matrix4f) mat, this);
-        } else {
-            setMatrix4fc(mat);
-        }
-        return this;
-    }
-    private void setMatrix4fc(Matrix4fc mat) {
         m00 = mat.m00();
         m01 = mat.m01();
         m02 = mat.m02();
@@ -514,6 +493,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         m20 = mat.m20();
         m21 = mat.m21();
         m22 = mat.m22();
+        return this;
     }
 
     /**
@@ -527,14 +507,6 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return this
      */
     public Matrix3f set(Matrix2fc mat) {
-        if (mat instanceof Matrix2f) {
-            MemUtil.INSTANCE.copy((Matrix2f) mat, this);
-        } else {
-            setMatrix2fc(mat);
-        }
-        return this;
-    }
-    private void setMatrix2fc(Matrix2fc mat) {
         m00 = mat.m00();
         m01 = mat.m01();
         m02 = 0.0f;
@@ -544,6 +516,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         m20 = 0.0f;
         m21 = 0.0f;
         m22 = 1.0f;
+        return this;
     }
 
     /**
@@ -558,12 +531,12 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         float y = axisAngle.y;
         float z = axisAngle.z;
         float angle = axisAngle.angle;
-        float invLength = (float) (1.0 / Math.sqrt(x*x + y*y + z*z));
+        float invLength = Math.invsqrt(x*x + y*y + z*z);
         x *= invLength;
         y *= invLength;
         z *= invLength;
-        float s = (float) Math.sin(angle);
-        float c = (float) Math.cosFromSin(s, angle);
+        float s = Math.sin(angle);
+        float c = Math.cosFromSin(s, angle);
         float omc = 1.0f - c;
         m00 = c + x*x*omc;
         m11 = c + y*y*omc;
@@ -595,7 +568,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         double y = axisAngle.y;
         double z = axisAngle.z;
         double angle = axisAngle.angle;
-        double invLength = 1.0 / Math.sqrt(x*x + y*y + z*z);
+        double invLength = Math.invsqrt(x*x + y*y + z*z);
         x *= invLength;
         y *= invLength;
         z *= invLength;
@@ -689,15 +662,15 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#mul(org.joml.Matrix3fc, org.joml.Matrix3f)
      */
     public Matrix3f mul(Matrix3fc right, Matrix3f dest) {
-        float nm00 = m00 * right.m00() + m10 * right.m01() + m20 * right.m02();
-        float nm01 = m01 * right.m00() + m11 * right.m01() + m21 * right.m02();
-        float nm02 = m02 * right.m00() + m12 * right.m01() + m22 * right.m02();
-        float nm10 = m00 * right.m10() + m10 * right.m11() + m20 * right.m12();
-        float nm11 = m01 * right.m10() + m11 * right.m11() + m21 * right.m12();
-        float nm12 = m02 * right.m10() + m12 * right.m11() + m22 * right.m12();
-        float nm20 = m00 * right.m20() + m10 * right.m21() + m20 * right.m22();
-        float nm21 = m01 * right.m20() + m11 * right.m21() + m21 * right.m22();
-        float nm22 = m02 * right.m20() + m12 * right.m21() + m22 * right.m22();
+        float nm00 = Math.fma(m00, right.m00(), Math.fma(m10, right.m01(), m20 * right.m02()));
+        float nm01 = Math.fma(m01, right.m00(), Math.fma(m11, right.m01(), m21 * right.m02()));
+        float nm02 = Math.fma(m02, right.m00(), Math.fma(m12, right.m01(), m22 * right.m02()));
+        float nm10 = Math.fma(m00, right.m10(), Math.fma(m10, right.m11(), m20 * right.m12()));
+        float nm11 = Math.fma(m01, right.m10(), Math.fma(m11, right.m11(), m21 * right.m12()));
+        float nm12 = Math.fma(m02, right.m10(), Math.fma(m12, right.m11(), m22 * right.m12()));
+        float nm20 = Math.fma(m00, right.m20(), Math.fma(m10, right.m21(), m20 * right.m22()));
+        float nm21 = Math.fma(m01, right.m20(), Math.fma(m11, right.m21(), m21 * right.m22()));
+        float nm22 = Math.fma(m02, right.m20(), Math.fma(m12, right.m21(), m22 * right.m22()));
         dest.m00 = nm00;
         dest.m01 = nm01;
         dest.m02 = nm02;
@@ -823,16 +796,6 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return this
      */
     public Matrix3f set(Vector3fc col0, Vector3fc col1, Vector3fc col2) {
-        if (col0 instanceof Vector3f &&
-            col1 instanceof Vector3f &&
-            col2 instanceof Vector3f) {
-            MemUtil.INSTANCE.set(this, (Vector3f) col0, (Vector3f) col1, (Vector3f) col2);
-        } else {
-            setVector3fc(col0, col1, col2);
-        }
-        return this;
-    }
-    private void setVector3fc(Vector3fc col0, Vector3fc col1, Vector3fc col2) {
         this.m00 = col0.x();
         this.m01 = col0.y();
         this.m02 = col0.z();
@@ -842,6 +805,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         this.m20 = col2.x();
         this.m21 = col2.y();
         this.m22 = col2.z();
+        return this;
     }
 
     /* (non-Javadoc)
@@ -866,16 +830,20 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#invert(org.joml.Matrix3f)
      */
     public Matrix3f invert(Matrix3f dest) {
-        float s = 1.0f / determinant();
-        float nm00 = (m11 * m22 - m21 * m12) * s;
-        float nm01 = (m21 * m02 - m01 * m22) * s;
-        float nm02 = (m01 * m12 - m11 * m02) * s;
-        float nm10 = (m20 * m12 - m10 * m22) * s;
-        float nm11 = (m00 * m22 - m20 * m02) * s;
-        float nm12 = (m10 * m02 - m00 * m12) * s;
-        float nm20 = (m10 * m21 - m20 * m11) * s;
-        float nm21 = (m20 * m01 - m00 * m21) * s;
-        float nm22 = (m00 * m11 - m10 * m01) * s;
+        float a = Math.fma(m00, m11, -m01 * m10);
+        float b = Math.fma(m02, m10, -m00 * m12);
+        float c = Math.fma(m01, m12, -m02 * m11);
+        float d = Math.fma(a, m22, Math.fma(b, m21, c * m20));
+        float s = 1.0f / d;
+        float nm00 = Math.fma(m11, m22, -m21 * m12) * s;
+        float nm01 = Math.fma(m21, m02, -m01 * m22) * s;
+        float nm02 = c * s;
+        float nm10 = Math.fma(m20, m12, -m10 * m22) * s;
+        float nm11 = Math.fma(m00, m22, -m20 * m02) * s;
+        float nm12 = b * s;
+        float nm20 = Math.fma(m10, m21, -m20 * m11) * s;
+        float nm21 = Math.fma(m20, m01, -m00 * m21) * s;
+        float nm22 = a * s;
         dest.m00 = nm00;
         dest.m01 = nm01;
         dest.m02 = nm02;
@@ -901,10 +869,9 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#transpose(org.joml.Matrix3f)
      */
     public Matrix3f transpose(Matrix3f dest) {
-        dest.set(m00, m10, m20,
-                 m01, m11, m21,
-                 m02, m12, m22);
-        return dest;
+        return dest.set(m00, m10, m20,
+                        m01, m11, m21,
+                        m02, m12, m22);
     }
 
     /**
@@ -943,9 +910,9 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return the string representation
      */
     public String toString(NumberFormat formatter) {
-        return formatter.format(m00) + " " + formatter.format(m10) + " " + formatter.format(m20) + "\n"
-             + formatter.format(m01) + " " + formatter.format(m11) + " " + formatter.format(m21) + "\n"
-             + formatter.format(m02) + " " + formatter.format(m12) + " " + formatter.format(m22) + "\n";
+        return Runtime.format(m00, formatter) + " " + Runtime.format(m10, formatter) + " " + Runtime.format(m20, formatter) + "\n"
+             + Runtime.format(m01, formatter) + " " + Runtime.format(m11, formatter) + " " + Runtime.format(m21, formatter) + "\n"
+             + Runtime.format(m02, formatter) + " " + Runtime.format(m12, formatter) + " " + Runtime.format(m22, formatter) + "\n";
     }
 
     /**
@@ -1136,8 +1103,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
     public Matrix3fc getToAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.put(this, address);
+        MemUtil.MemUtilUnsafe.put(this, address);
         return this;
     }
 //#endif
@@ -1208,8 +1174,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
     public Matrix3f setFromAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.get(this, address);
+        MemUtil.MemUtilUnsafe.get(this, address);
         return this;
     }
 //#endif
@@ -1512,8 +1477,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return this
      */
     public Matrix3f rotation(float angle, float x, float y, float z) {
-        float sin = (float) Math.sin(angle);
-        float cos = (float) Math.cosFromSin(sin, angle);
+        float sin = Math.sin(angle);
+        float cos = Math.cosFromSin(sin, angle);
         float C = 1.0f - cos;
         float xy = x * y, xz = x * z, yz = y * z;
         m00 = cos + x * x * C;
@@ -1543,8 +1508,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      */
     public Matrix3f rotationX(float ang) {
         float sin, cos;
-        sin = (float) Math.sin(ang);
-        cos = (float) Math.cosFromSin(sin, ang);
+        sin = Math.sin(ang);
+        cos = Math.cosFromSin(sin, ang);
         m00 = 1.0f;
         m01 = 0.0f;
         m02 = 0.0f;
@@ -1572,8 +1537,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      */
     public Matrix3f rotationY(float ang) {
         float sin, cos;
-        sin = (float) Math.sin(ang);
-        cos = (float) Math.cosFromSin(sin, ang);
+        sin = Math.sin(ang);
+        cos = Math.cosFromSin(sin, ang);
         m00 = cos;
         m01 = 0.0f;
         m02 = -sin;
@@ -1601,8 +1566,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      */
     public Matrix3f rotationZ(float ang) {
         float sin, cos;
-        sin = (float) Math.sin(ang);
-        cos = (float) Math.cosFromSin(sin, ang);
+        sin = Math.sin(ang);
+        cos = Math.cosFromSin(sin, ang);
         m00 = cos;
         m01 = sin;
         m02 = 0.0f;
@@ -1634,12 +1599,12 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return this
      */
     public Matrix3f rotationXYZ(float angleX, float angleY, float angleZ) {
-        float sinX = (float) Math.sin(angleX);
-        float cosX = (float) Math.cosFromSin(sinX, angleX);
-        float sinY = (float) Math.sin(angleY);
-        float cosY = (float) Math.cosFromSin(sinY, angleY);
-        float sinZ = (float) Math.sin(angleZ);
-        float cosZ = (float) Math.cosFromSin(sinZ, angleZ);
+        float sinX = Math.sin(angleX);
+        float cosX = Math.cosFromSin(sinX, angleX);
+        float sinY = Math.sin(angleY);
+        float cosY = Math.cosFromSin(sinY, angleY);
+        float sinZ = Math.sin(angleZ);
+        float cosZ = Math.cosFromSin(sinZ, angleZ);
         float m_sinX = -sinX;
         float m_sinY = -sinY;
         float m_sinZ = -sinZ;
@@ -1685,12 +1650,12 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return this
      */
     public Matrix3f rotationZYX(float angleZ, float angleY, float angleX) {
-        float sinX = (float) Math.sin(angleX);
-        float cosX = (float) Math.cosFromSin(sinX, angleX);
-        float sinY = (float) Math.sin(angleY);
-        float cosY = (float) Math.cosFromSin(sinY, angleY);
-        float sinZ = (float) Math.sin(angleZ);
-        float cosZ = (float) Math.cosFromSin(sinZ, angleZ);
+        float sinX = Math.sin(angleX);
+        float cosX = Math.cosFromSin(sinX, angleX);
+        float sinY = Math.sin(angleY);
+        float cosY = Math.cosFromSin(sinY, angleY);
+        float sinZ = Math.sin(angleZ);
+        float cosZ = Math.cosFromSin(sinZ, angleZ);
         float m_sinZ = -sinZ;
         float m_sinY = -sinY;
         float m_sinX = -sinX;
@@ -1736,12 +1701,12 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return this
      */
     public Matrix3f rotationYXZ(float angleY, float angleX, float angleZ) {
-        float sinX = (float) Math.sin(angleX);
-        float cosX = (float) Math.cosFromSin(sinX, angleX);
-        float sinY = (float) Math.sin(angleY);
-        float cosY = (float) Math.cosFromSin(sinY, angleY);
-        float sinZ = (float) Math.sin(angleZ);
-        float cosZ = (float) Math.cosFromSin(sinZ, angleZ);
+        float sinX = Math.sin(angleX);
+        float cosX = Math.cosFromSin(sinX, angleX);
+        float sinY = Math.sin(angleY);
+        float cosY = Math.cosFromSin(sinY, angleY);
+        float sinZ = Math.sin(angleZ);
+        float cosZ = Math.cosFromSin(sinZ, angleZ);
         float m_sinY = -sinY;
         float m_sinX = -sinX;
         float m_sinZ = -sinZ;
@@ -1823,18 +1788,16 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#transform(org.joml.Vector3fc, org.joml.Vector3f)
      */
     public Vector3f transform(Vector3fc v, Vector3f dest) {
-        v.mul(this, dest);
-        return dest;
+        return v.mul(this, dest);
     }
 
     /* (non-Javadoc)
      * @see org.joml.Matrix3fc#transform(float, float, float, org.joml.Vector3f)
      */
     public Vector3f transform(float x, float y, float z, Vector3f dest) {
-        dest.set(m00 * x + m10 * y + m20 * z,
-                 m01 * x + m11 * y + m21 * z,
-                 m02 * x + m12 * y + m22 * z);
-        return dest;
+        return dest.set(Math.fma(m00, x, Math.fma(m10, y, m20 * z)),
+                        Math.fma(m01, x, Math.fma(m11, y, m21 * z)),
+                        Math.fma(m02, x, Math.fma(m12, y, m22 * z)));
     }
 
     /* (non-Javadoc)
@@ -1848,18 +1811,16 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#transformTranspose(org.joml.Vector3fc, org.joml.Vector3f)
      */
     public Vector3f transformTranspose(Vector3fc v, Vector3f dest) {
-        v.mulTranspose(this, dest);
-        return dest;
+        return v.mulTranspose(this, dest);
     }
 
     /* (non-Javadoc)
      * @see org.joml.Matrix3fc#transformTranspose(float, float, float, org.joml.Vector3f)
      */
     public Vector3f transformTranspose(float x, float y, float z, Vector3f dest) {
-        dest.set(m00 * x + m01 * y + m02 * z,
-                 m10 * x + m11 * y + m12 * z,
-                 m20 * x + m21 * y + m22 * z);
-        return dest;
+        return dest.set(Math.fma(m00, x, Math.fma(m01, y, m02 * z)),
+                        Math.fma(m10, x, Math.fma(m11, y, m12 * z)),
+                        Math.fma(m20, x, Math.fma(m21, y, m22 * z)));
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -1891,8 +1852,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      */
     public Matrix3f rotateX(float ang, Matrix3f dest) {
         float sin, cos;
-        sin = (float) Math.sin(ang);
-        cos = (float) Math.cosFromSin(sin, ang);
+        sin = Math.sin(ang);
+        cos = Math.cosFromSin(sin, ang);
         float rm11 = cos;
         float rm21 = -sin;
         float rm12 = sin;
@@ -1913,7 +1874,6 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         dest.m00 = m00;
         dest.m01 = m01;
         dest.m02 = m02;
-
         return dest;
     }
 
@@ -1944,8 +1904,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      */
     public Matrix3f rotateY(float ang, Matrix3f dest) {
         float sin, cos;
-        sin = (float) Math.sin(ang);
-        cos = (float) Math.cosFromSin(sin, ang);
+        sin = Math.sin(ang);
+        cos = Math.cosFromSin(sin, ang);
         float rm00 = cos;
         float rm20 = sin;
         float rm02 = -sin;
@@ -1966,7 +1926,6 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         dest.m10 = m10;
         dest.m11 = m11;
         dest.m12 = m12;
-
         return dest;
     }
 
@@ -1997,8 +1956,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      */
     public Matrix3f rotateZ(float ang, Matrix3f dest) {
         float sin, cos;
-        sin = (float) Math.sin(ang);
-        cos = (float) Math.cosFromSin(sin, ang);
+        sin = Math.sin(ang);
+        cos = Math.cosFromSin(sin, ang);
         float rm00 = cos;
         float rm10 = -sin;
         float rm01 = sin;
@@ -2019,7 +1978,6 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         dest.m20 = m20;
         dest.m21 = m21;
         dest.m22 = m22;
-
         return dest;
     }
 
@@ -2099,12 +2057,12 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#rotateXYZ(float, float, float, org.joml.Matrix3f)
      */
     public Matrix3f rotateXYZ(float angleX, float angleY, float angleZ, Matrix3f dest) {
-        float sinX = (float) Math.sin(angleX);
-        float cosX = (float) Math.cosFromSin(sinX, angleX);
-        float sinY = (float) Math.sin(angleY);
-        float cosY = (float) Math.cosFromSin(sinY, angleY);
-        float sinZ = (float) Math.sin(angleZ);
-        float cosZ = (float) Math.cosFromSin(sinZ, angleZ);
+        float sinX = Math.sin(angleX);
+        float cosX = Math.cosFromSin(sinX, angleX);
+        float sinY = Math.sin(angleY);
+        float cosY = Math.cosFromSin(sinY, angleY);
+        float sinZ = Math.sin(angleZ);
+        float cosZ = Math.cosFromSin(sinZ, angleZ);
         float m_sinX = -sinX;
         float m_sinY = -sinY;
         float m_sinZ = -sinZ;
@@ -2187,12 +2145,12 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#rotateZYX(float, float, float, org.joml.Matrix3f)
      */
     public Matrix3f rotateZYX(float angleZ, float angleY, float angleX, Matrix3f dest) {
-        float sinX = (float) Math.sin(angleX);
-        float cosX = (float) Math.cosFromSin(sinX, angleX);
-        float sinY = (float) Math.sin(angleY);
-        float cosY = (float) Math.cosFromSin(sinY, angleY);
-        float sinZ = (float) Math.sin(angleZ);
-        float cosZ = (float) Math.cosFromSin(sinZ, angleZ);
+        float sinX = Math.sin(angleX);
+        float cosX = Math.cosFromSin(sinX, angleX);
+        float sinY = Math.sin(angleY);
+        float cosY = Math.cosFromSin(sinY, angleY);
+        float sinZ = Math.sin(angleZ);
+        float cosZ = Math.cosFromSin(sinZ, angleZ);
         float m_sinZ = -sinZ;
         float m_sinY = -sinY;
         float m_sinX = -sinX;
@@ -2275,12 +2233,12 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#rotateYXZ(float, float, float, org.joml.Matrix3f)
      */
     public Matrix3f rotateYXZ(float angleY, float angleX, float angleZ, Matrix3f dest) {
-        float sinX = (float) Math.sin(angleX);
-        float cosX = (float) Math.cosFromSin(sinX, angleX);
-        float sinY = (float) Math.sin(angleY);
-        float cosY = (float) Math.cosFromSin(sinY, angleY);
-        float sinZ = (float) Math.sin(angleZ);
-        float cosZ = (float) Math.cosFromSin(sinZ, angleZ);
+        float sinX = Math.sin(angleX);
+        float cosX = Math.cosFromSin(sinX, angleX);
+        float sinY = Math.sin(angleY);
+        float cosY = Math.cosFromSin(sinY, angleY);
+        float sinZ = Math.sin(angleZ);
+        float cosZ = Math.cosFromSin(sinZ, angleZ);
         float m_sinY = -sinY;
         float m_sinX = -sinX;
         float m_sinZ = -sinZ;
@@ -2344,8 +2302,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#rotate(float, float, float, float, org.joml.Matrix3f)
      */
     public Matrix3f rotate(float ang, float x, float y, float z, Matrix3f dest) {
-        float s = (float) Math.sin(ang);
-        float c = (float) Math.cosFromSin(s, ang);
+        float s = Math.sin(ang);
+        float c = Math.cosFromSin(s, ang);
         float C = 1.0f - c;
 
         // rotation matrix elements:
@@ -2381,7 +2339,6 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         dest.m10 = nm10;
         dest.m11 = nm11;
         dest.m12 = nm12;
-
         return dest;
     }
 
@@ -2420,8 +2377,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return dest
      */
     public Matrix3f rotateLocal(float ang, float x, float y, float z, Matrix3f dest) {
-        float s = (float) Math.sin(ang);
-        float c = (float) Math.cosFromSin(s, ang);
+        float s = Math.sin(ang);
+        float c = Math.cosFromSin(s, ang);
         float C = 1.0f - c;
         float xx = x * x, xy = x * y, xz = x * z;
         float yy = y * y, yz = y * z;
@@ -2519,8 +2476,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return dest
      */
     public Matrix3f rotateLocalX(float ang, Matrix3f dest) {
-        float sin = (float) Math.sin(ang);
-        float cos = (float) Math.cosFromSin(sin, ang);
+        float sin = Math.sin(ang);
+        float cos = Math.cosFromSin(sin, ang);
         float nm01 = cos * m01 - sin * m02;
         float nm02 = sin * m01 + cos * m02;
         float nm11 = cos * m11 - sin * m12;
@@ -2593,8 +2550,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return dest
      */
     public Matrix3f rotateLocalY(float ang, Matrix3f dest) {
-        float sin = (float) Math.sin(ang);
-        float cos = (float) Math.cosFromSin(sin, ang);
+        float sin = Math.sin(ang);
+        float cos = Math.cosFromSin(sin, ang);
         float nm00 =  cos * m00 + sin * m02;
         float nm02 = -sin * m00 + cos * m02;
         float nm10 =  cos * m10 + sin * m12;
@@ -2667,8 +2624,8 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return dest
      */
     public Matrix3f rotateLocalZ(float ang, Matrix3f dest) {
-        float sin = (float) Math.sin(ang);
-        float cos = (float) Math.cosFromSin(sin, ang);
+        float sin = Math.sin(ang);
+        float cos = Math.cosFromSin(sin, ang);
         float nm00 = cos * m00 - sin * m01;
         float nm01 = sin * m00 + cos * m01;
         float nm10 = cos * m10 - sin * m11;
@@ -3093,7 +3050,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
     public Matrix3f lookAlong(float dirX, float dirY, float dirZ,
                               float upX, float upY, float upZ, Matrix3f dest) {
         // Normalize direction
-        float invDirLength = 1.0f / (float) Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        float invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX *= -invDirLength;
         dirY *= -invDirLength;
         dirZ *= -invDirLength;
@@ -3103,7 +3060,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         leftY = upZ * dirX - upX * dirZ;
         leftZ = upX * dirY - upY * dirX;
         // normalize left
-        float invLeftLength = 1.0f / (float) Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        float invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -3141,7 +3098,6 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         dest.m10 = nm10;
         dest.m11 = nm11;
         dest.m12 = nm12;
-
         return dest;
     }
 
@@ -3224,7 +3180,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
     public Matrix3f setLookAlong(float dirX, float dirY, float dirZ,
                                  float upX, float upY, float upZ) {
         // Normalize direction
-        float invDirLength = 1.0f / (float) Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        float invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         dirX *= -invDirLength;
         dirY *= -invDirLength;
         dirZ *= -invDirLength;
@@ -3234,7 +3190,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         leftY = upZ * dirX - upX * dirZ;
         leftZ = upX * dirY - upY * dirX;
         // normalize left
-        float invLeftLength = 1.0f / (float) Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        float invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -3262,25 +3218,14 @@ public class Matrix3f implements Externalizable, Matrix3fc {
     public Vector3f getRow(int row, Vector3f dest) throws IndexOutOfBoundsException {
         switch (row) {
         case 0:
-            dest.x = m00;
-            dest.y = m10;
-            dest.z = m20;
-            break;
+            return dest.set(m00, m10, m20);
         case 1:
-            dest.x = m01;
-            dest.y = m11;
-            dest.z = m21;
-            break;
+            return dest.set(m01, m11, m21);
         case 2:
-            dest.x = m02;
-            dest.y = m12;
-            dest.z = m22;
-            break;
+            return dest.set(m02, m12, m22);
         default:
             throw new IndexOutOfBoundsException();
         }
-        
-        return dest;
     }
 
     /**
@@ -3340,24 +3285,14 @@ public class Matrix3f implements Externalizable, Matrix3fc {
     public Vector3f getColumn(int column, Vector3f dest) throws IndexOutOfBoundsException {
         switch (column) {
         case 0:
-            dest.x = m00;
-            dest.y = m01;
-            dest.z = m02;
-            break;
+            return dest.set(m00, m01, m02);
         case 1:
-            dest.x = m10;
-            dest.y = m11;
-            dest.z = m12;
-            break;
+            return dest.set(m10, m11, m12);
         case 2:
-            dest.x = m20;
-            dest.y = m21;
-            dest.z = m22;
-            break;
+            return dest.set(m20, m21, m22);
         default:
             throw new IndexOutOfBoundsException();
         }
-        return dest;
     }
 
     /**
@@ -3523,6 +3458,118 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         throw new IllegalArgumentException();
     }
 
+    /*
+     * (non-Javadoc)
+     * @see org.joml.Matrix3fc#getRowColumn(int, int)
+     */
+    public float getRowColumn(int row, int column) {
+        switch (row) {
+        case 0:
+            switch (column) {
+            case 0:
+                return m00;
+            case 1:
+                return m01;
+            case 2:
+                return m02;
+            default:
+                break;
+            }
+            break;
+        case 1:
+            switch (column) {
+            case 0:
+                return m10;
+            case 1:
+                return m11;
+            case 2:
+                return m12;
+            default:
+                break;
+            }
+            break;
+        case 2:
+            switch (column) {
+            case 0:
+                return m20;
+            case 1:
+                return m21;
+            case 2:
+                return m22;
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+        throw new IllegalArgumentException();
+    }
+
+    /**
+     * Set the matrix element at the given row and column to the specified value.
+     * 
+     * @param row
+     *          the row index in <code>[0..2]</code>
+     * @param column
+     *          the colum index in <code>[0..2]</code>
+     * @param value
+     *          the value
+     * @return this
+     */
+    public Matrix3f setRowColumn(int row, int column, float value) {
+        switch (row) {
+        case 0:
+            switch (column) {
+            case 0:
+                this.m00 = value;
+                return this;
+            case 1:
+                this.m01 = value;
+                return this;
+            case 2:
+                this.m02 = value;
+                return this;
+            default:
+                break;
+            }
+            break;
+        case 1:
+            switch (column) {
+            case 0:
+                this.m10 = value;
+                return this;
+            case 1:
+                this.m11 = value;
+                return this;
+            case 2:
+                this.m12 = value;
+                return this;
+            default:
+                break;
+            }
+            break;
+        case 2:
+            switch (column) {
+            case 0:
+                this.m20 = value;
+                return this;
+            case 1:
+                this.m21 = value;
+                return this;
+            case 2:
+                this.m22 = value;
+                return this;
+            default:
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+        throw new IllegalArgumentException();
+    }
+
     /**
      * Set <code>this</code> matrix to its own normal matrix.
      * <p>
@@ -3634,10 +3681,9 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#getScale(org.joml.Vector3f)
      */
     public Vector3f getScale(Vector3f dest) {
-        dest.x = (float) Math.sqrt(m00 * m00 + m01 * m01 + m02 * m02);
-        dest.y = (float) Math.sqrt(m10 * m10 + m11 * m11 + m12 * m12);
-        dest.z = (float) Math.sqrt(m20 * m20 + m21 * m21 + m22 * m22);
-        return dest;
+        return dest.set(Math.sqrt(m00 * m00 + m01 * m01 + m02 * m02),
+                        Math.sqrt(m10 * m10 + m11 * m11 + m12 * m12),
+                        Math.sqrt(m20 * m20 + m21 * m21 + m22 * m22));
     }
 
     /* (non-Javadoc)
@@ -3915,15 +3961,15 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#lerp(org.joml.Matrix3fc, float, org.joml.Matrix3f)
      */
     public Matrix3f lerp(Matrix3fc other, float t, Matrix3f dest) {
-        dest.m00 = m00 + (other.m00() - m00) * t;
-        dest.m01 = m01 + (other.m01() - m01) * t;
-        dest.m02 = m02 + (other.m02() - m02) * t;
-        dest.m10 = m10 + (other.m10() - m10) * t;
-        dest.m11 = m11 + (other.m11() - m11) * t;
-        dest.m12 = m12 + (other.m12() - m12) * t;
-        dest.m20 = m20 + (other.m20() - m20) * t;
-        dest.m21 = m21 + (other.m21() - m21) * t;
-        dest.m22 = m22 + (other.m22() - m22) * t;
+        dest.m00 = Math.fma(other.m00() - m00, t, m00);
+        dest.m01 = Math.fma(other.m01() - m01, t, m01);
+        dest.m02 = Math.fma(other.m02() - m02, t, m02);
+        dest.m10 = Math.fma(other.m10() - m10, t, m10);
+        dest.m11 = Math.fma(other.m11() - m11, t, m11);
+        dest.m12 = Math.fma(other.m12() - m12, t, m12);
+        dest.m20 = Math.fma(other.m20() - m20, t, m20);
+        dest.m21 = Math.fma(other.m21() - m21, t, m21);
+        dest.m22 = Math.fma(other.m22() - m22, t, m22);
         return dest;
     }
 
@@ -4055,7 +4101,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      */
     public Matrix3f rotateTowards(float dirX, float dirY, float dirZ, float upX, float upY, float upZ, Matrix3f dest) {
         // Normalize direction
-        float invDirLength = 1.0f / (float) Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        float invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         float ndirX = dirX * invDirLength;
         float ndirY = dirY * invDirLength;
         float ndirZ = dirZ * invDirLength;
@@ -4065,7 +4111,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         leftY = upZ * ndirX - upX * ndirZ;
         leftZ = upX * ndirY - upY * ndirX;
         // normalize left
-        float invLeftLength = 1.0f / (float) Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        float invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -4150,7 +4196,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      */
     public Matrix3f rotationTowards(float dirX, float dirY, float dirZ, float upX, float upY, float upZ) {
         // Normalize direction
-        float invDirLength = 1.0f / (float) Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        float invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         float ndirX = dirX * invDirLength;
         float ndirY = dirY * invDirLength;
         float ndirZ = dirZ * invDirLength;
@@ -4160,7 +4206,7 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         leftY = upZ * ndirX - upX * ndirZ;
         leftZ = upX * ndirY - upY * ndirX;
         // normalize left
-        float invLeftLength = 1.0f / (float) Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        float invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -4202,9 +4248,9 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @return dest
      */
     public Vector3f getEulerAnglesZYX(Vector3f dest) {
-        dest.x = (float) Math.atan2(m12, m22);
-        dest.y = (float) Math.atan2(-m02, (float) Math.sqrt(m12 * m12 + m22 * m22));
-        dest.z = (float) Math.atan2(m01, m00);
+        dest.x = Math.atan2(m12, m22);
+        dest.y = Math.atan2(-m02, Math.sqrt(m12 * m12 + m22 * m22));
+        dest.z = Math.atan2(m01, m00);
         return dest;
     }
 
@@ -4306,16 +4352,16 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         float nm10 = m00 * rm10 + m10 * rm11 + m20 * rm12;
         float nm11 = m01 * rm10 + m11 * rm11 + m21 * rm12;
         float nm12 = m02 * rm10 + m12 * rm11 + m22 * rm12;
-        dest._m20(m00 * rm20 + m10 * rm21 + m20 * rm22);
-        dest._m21(m01 * rm20 + m11 * rm21 + m21 * rm22);
-        dest._m22(m02 * rm20 + m12 * rm21 + m22 * rm22);
-        dest._m00(nm00);
-        dest._m01(nm01);
-        dest._m02(nm02);
-        dest._m10(nm10);
-        dest._m11(nm11);
-        dest._m12(nm12);
-        return dest;
+        return dest
+        ._m20(m00 * rm20 + m10 * rm21 + m20 * rm22)
+        ._m21(m01 * rm20 + m11 * rm21 + m21 * rm22)
+        ._m22(m02 * rm20 + m12 * rm21 + m22 * rm22)
+        ._m00(nm00)
+        ._m01(nm01)
+        ._m02(nm02)
+        ._m10(nm10)
+        ._m11(nm11)
+        ._m12(nm12);
     }
 
     /**
@@ -4381,12 +4427,12 @@ public class Matrix3f implements Externalizable, Matrix3fc {
      * @see org.joml.Matrix3fc#reflect(org.joml.Quaternionfc, org.joml.Matrix3f)
      */
     public Matrix3f reflect(Quaternionfc orientation, Matrix3f dest) {
-        double num1 = orientation.x() + orientation.x();
-        double num2 = orientation.y() + orientation.y();
-        double num3 = orientation.z() + orientation.z();
-        float normalX = (float) (orientation.x() * num3 + orientation.w() * num2);
-        float normalY = (float) (orientation.y() * num3 - orientation.w() * num1);
-        float normalZ = (float) (1.0 - (orientation.x() * num1 + orientation.y() * num2));
+        float num1 = orientation.x() + orientation.x();
+        float num2 = orientation.y() + orientation.y();
+        float num3 = orientation.z() + orientation.z();
+        float normalX = orientation.x() * num3 + orientation.w() * num2;
+        float normalY = orientation.y() * num3 - orientation.w() * num1;
+        float normalZ = 1.0f - (orientation.x() * num1 + orientation.y() * num2);
         return reflect(normalX, normalY, normalZ, dest);
     }
 
@@ -4455,6 +4501,12 @@ public class Matrix3f implements Externalizable, Matrix3fc {
         float normalY = orientation.y() * num3 - orientation.w() * num1;
         float normalZ = 1.0f - (orientation.x() * num1 + orientation.y() * num2);
         return reflection(normalX, normalY, normalZ);
+    }
+
+    public boolean isFinite() {
+        return Math.isFinite(m00) && Math.isFinite(m01) && Math.isFinite(m02) &&
+               Math.isFinite(m10) && Math.isFinite(m11) && Math.isFinite(m12) &&
+               Math.isFinite(m20) && Math.isFinite(m21) && Math.isFinite(m22);
     }
 
 }

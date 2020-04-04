@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2017-2019 JOML
+ * Copyright (c) 2017-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,9 +33,6 @@ import java.nio.DoubleBuffer;
 //#endif
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.joml.internal.*;
-import org.joml.internal.Runtime;
 
 //#ifdef __GWT__
 import com.google.gwt.typedarrays.shared.Float64Array;
@@ -198,7 +195,7 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
      *          the new value
      * @return this
      */
-    public Matrix3x2d _m00(double m00) {
+    Matrix3x2d _m00(double m00) {
         this.m00 = m00;
         return this;
     }
@@ -209,7 +206,7 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
      *          the new value
      * @return this
      */
-    public Matrix3x2d _m01(double m01) {
+    Matrix3x2d _m01(double m01) {
         this.m01 = m01;
         return this;
     }
@@ -220,7 +217,7 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
      *          the new value
      * @return this
      */
-    public Matrix3x2d _m10(double m10) {
+    Matrix3x2d _m10(double m10) {
         this.m10 = m10;
         return this;
     }
@@ -231,7 +228,7 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
      *          the new value
      * @return this
      */
-    public Matrix3x2d _m11(double m11) {
+    Matrix3x2d _m11(double m11) {
         this.m11 = m11;
         return this;
     }
@@ -242,7 +239,7 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
      *          the new value
      * @return this
      */
-    public Matrix3x2d _m20(double m20) {
+    Matrix3x2d _m20(double m20) {
         this.m20 = m20;
         return this;
     }
@@ -253,7 +250,7 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
      *          the new value
      * @return this
      */
-    public Matrix3x2d _m21(double m21) {
+    Matrix3x2d _m21(double m21) {
         this.m21 = m21;
         return this;
     }
@@ -819,8 +816,8 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
      * @return the string representation
      */
     public String toString(NumberFormat formatter) {
-        return formatter.format(m00) + " " + formatter.format(m10) + " " + formatter.format(m20) + "\n"
-             + formatter.format(m01) + " " + formatter.format(m11) + " " + formatter.format(m21) + "\n";
+        return Runtime.format(m00, formatter) + " " + Runtime.format(m10, formatter) + " " + Runtime.format(m20, formatter) + "\n"
+             + Runtime.format(m01, formatter) + " " + Runtime.format(m11, formatter) + " " + Runtime.format(m21, formatter) + "\n";
     }
 
     /**
@@ -1099,8 +1096,7 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
     public Matrix3x2dc getToAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.put(this, address);
+        MemUtil.MemUtilUnsafe.put(this, address);
         return this;
     }
 //#endif
@@ -1245,8 +1241,7 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
     public Matrix3x2d setFromAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.get(this, address);
+        MemUtil.MemUtilUnsafe.get(this, address);
         return this;
     }
 //#endif
@@ -2452,16 +2447,16 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
     public boolean testCircle(double x, double y, double r) {
         double invl;
         double nxX = +m00, nxY = +m10, nxW = 1.0f + m20;
-        invl = 1.0 / Math.sqrt(nxX * nxX + nxY * nxY);
+        invl = Math.invsqrt(nxX * nxX + nxY * nxY);
         nxX *= invl; nxY *= invl; nxW *= invl;
         double pxX = -m00, pxY = -m10, pxW = 1.0f - m20;
-        invl = 1.0 / Math.sqrt(pxX * pxX + pxY * pxY);
+        invl = Math.invsqrt(pxX * pxX + pxY * pxY);
         pxX *= invl; pxY *= invl; pxW *= invl;
         double nyX = +m01, nyY = +m11, nyW = 1.0f + m21;
-        invl = 1.0 / Math.sqrt(nyX * nyX + nyY * nyY);
+        invl = Math.invsqrt(nyX * nyX + nyY * nyY);
         nyX *= invl; nyY *= invl; nyW *= invl;
         double pyX = -m01, pyY = -m11, pyW = 1.0f - m21;
-        invl = 1.0 / Math.sqrt(pyX * pyX + pyY * pyY);
+        invl = Math.invsqrt(pyX * pyX + pyY * pyY);
         pyX *= invl; pyY *= invl; pyW *= invl;
         return nxX * x + nxY * y + nxW >= -r && pxX * x + pxY * y + pxW >= -r &&
                nyX * x + nyY * y + nyW >= -r && pyX * x + pyY * y + pyW >= -r;
@@ -2548,6 +2543,12 @@ public class Matrix3x2d implements Matrix3x2dc, Externalizable {
         if (!Runtime.equals(m21, m.m21(), delta))
             return false;
         return true;
+    }
+
+    public boolean isFinite() {
+        return Math.isFinite(m00) && Math.isFinite(m01) &&
+               Math.isFinite(m10) && Math.isFinite(m11) &&
+               Math.isFinite(m20) && Math.isFinite(m21);
     }
 
 }

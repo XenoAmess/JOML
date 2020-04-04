@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -38,17 +38,6 @@ public class Random {
          * = 0x1p-24f
          */
         private static final float INT_TO_FLOAT = Float.intBitsToFloat(864026624);
-//#ifndef __GWT__
-        private static final boolean HAS_Long_rotateLeft = hasLongRotateLeft();
-        private static boolean hasLongRotateLeft() {
-            try {
-                Long.class.getDeclaredMethod("rotateLeft", new Class[] { long.class, int.class });
-                return true;
-            } catch (NoSuchMethodException e) {
-                return false;
-            }
-        }
-//#endif
 
         /**
          * Xorshiro128 state
@@ -101,7 +90,7 @@ public class Random {
         }
         private static long rotl(final long x, final int k) {
 //#ifndef __GWT__
-            if (HAS_Long_rotateLeft)
+            if (Runtime.HAS_Long_rotateLeft)
 //#endif
                 return rotl_JDK5(x, k);
 //#ifndef __GWT__

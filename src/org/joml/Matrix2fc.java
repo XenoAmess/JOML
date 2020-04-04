@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019 JOML
+ * Copyright (c) 2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -726,5 +726,15 @@ public interface Matrix2fc {
      * @return <code>true</code> whether all of the matrix elements are equal; <code>false</code> otherwise
      */
     boolean equals(Matrix2fc m, float delta);
+
+    /**
+     * Determine whether all matrix elements are finite floating-point values, that
+     * is, they are not {@link Float#isNaN() NaN} and not
+     * {@link Float#isInfinite() infinity}.
+     *
+     * @return {@code true} if all components are finite floating-point values;
+     *         {@code false} otherwise
+     */
+    boolean isFinite();
 
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015-2019 Richard Greenlees
+ * Copyright (c) 2015-2020 Richard Greenlees
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,6 @@ import java.nio.IntBuffer;
 //#endif
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.joml.Math;
-import org.joml.internal.MemUtil;
-import org.joml.internal.Options;
-import org.joml.internal.Runtime;
 
 /**
  * Contains the definition of a Vector comprising 3 ints and associated
@@ -78,7 +73,9 @@ public class Vector3i implements Externalizable, Vector3ic {
      *          the value of all three components
      */
     public Vector3i(int d) {
-        this(d, d, d);
+        this.x = d;
+        this.y = d;
+        this.z = d;
     }
 
     /**
@@ -104,7 +101,9 @@ public class Vector3i implements Externalizable, Vector3ic {
      *          the {@link Vector3ic} to copy the values from
      */
     public Vector3i(Vector3ic v) {
-        this(v.x(), v.y(), v.z());
+        this.x = v.x();
+        this.y = v.y();
+        this.z = v.z();
     }
 
     /**
@@ -117,7 +116,86 @@ public class Vector3i implements Externalizable, Vector3ic {
      *          the z component
      */
     public Vector3i(Vector2ic v, int z) {
-        this(v.x(), v.y(), z);
+        this.x = v.x();
+        this.y = v.y();
+        this.z = z;
+    }
+
+    /**
+     * Create a new {@link Vector3i} with the first two components from the
+     * given <code>v</code> and the given <code>z</code> and round using the given {@link RoundingMode}.
+     *
+     * @param v
+     *          the {@link Vector2fc} to copy the values from
+     * @param z
+     *          the z component
+     * @param mode
+     *          the {@link RoundingMode} to use
+     */
+    public Vector3i(Vector2fc v, float z, int mode) {
+        x = Math.roundUsing(v.x(), mode);
+        y = Math.roundUsing(v.y(), mode);
+        z = Math.roundUsing(z, mode);
+    }
+
+    /**
+     * Create a new {@link Vector3i} and initialize its components to the rounded value of
+     * the given vector.
+     *
+     * @param v
+     *          the {@link Vector3fc} to round and copy the values from
+     * @param mode
+     *          the {@link RoundingMode} to use
+     */
+    public Vector3i(Vector3fc v, int mode) {
+        x = Math.roundUsing(v.x(), mode);
+        y = Math.roundUsing(v.y(), mode);
+        z = Math.roundUsing(v.z(), mode);
+    }
+
+    /**
+     * Create a new {@link Vector3i} with the first two components from the
+     * given <code>v</code> and the given <code>z</code> and round using the given {@link RoundingMode}.
+     *
+     * @param v
+     *          the {@link Vector2dc} to copy the values from
+     * @param z
+     *          the z component
+     * @param mode
+     *          the {@link RoundingMode} to use
+     */
+    public Vector3i(Vector2dc v, float z, int mode) {
+        x = Math.roundUsing(v.x(), mode);
+        y = Math.roundUsing(v.y(), mode);
+        z = Math.roundUsing(z, mode);
+    }
+
+    /**
+     * Create a new {@link Vector3i} and initialize its components to the rounded value of
+     * the given vector.
+     *
+     * @param v
+     *          the {@link Vector3dc} to round and copy the values from
+     * @param mode
+     *          the {@link RoundingMode} to use
+     */
+    public Vector3i(Vector3dc v, int mode) {
+        x = Math.roundUsing(v.x(), mode);
+        y = Math.roundUsing(v.y(), mode);
+        z = Math.roundUsing(v.z(), mode);
+    }
+
+    /**
+     * Create a new {@link Vector3i} and initialize its three components from the first
+     * three elements of the given array.
+     * 
+     * @param xyz
+     *          the array containing at least three elements
+     */
+    public Vector3i(int[] xyz) {
+        this.x = xyz[0];
+        this.y = xyz[1];
+        this.z = xyz[2];
     }
 
 //#ifdef __HAS_NIO__
@@ -138,7 +216,7 @@ public class Vector3i implements Externalizable, Vector3ic {
      *          values will be read in <code>x, y, z</code> order
      */
     public Vector3i(ByteBuffer buffer) {
-        this(buffer.position(), buffer);
+        MemUtil.INSTANCE.get(this, buffer.position(), buffer);
     }
 
     /**
@@ -174,7 +252,7 @@ public class Vector3i implements Externalizable, Vector3ic {
      *          values will be read in <code>x, y, z</code> order
      */
     public Vector3i(IntBuffer buffer) {
-        this(buffer.position(), buffer);
+        MemUtil.INSTANCE.get(this, buffer.position(), buffer);
     }
 
     /**
@@ -193,10 +271,6 @@ public class Vector3i implements Externalizable, Vector3ic {
         MemUtil.INSTANCE.get(this, index, buffer);
     }
 //#endif
-
-    private Vector3i thisOrNew() {
-        return this;
-    }
 
     /* (non-Javadoc)
      * @see org.joml.Vector3ic#x()
@@ -234,17 +308,58 @@ public class Vector3i implements Externalizable, Vector3ic {
     }
 
     /**
-     * Set the x, y and z components to match the supplied vector.
+     * Set this {@link Vector3i} to the values of v using {@link RoundingMode#TRUNCATE} rounding.
      * <p>
      * Note that due to the given vector <code>v</code> storing the components
      * in double-precision, there is the possibility to lose precision.
      *
      * @param v
-     *          contains the values of x, y and z to set
+     *          the vector to copy from
      * @return this
      */
     public Vector3i set(Vector3dc v) {
-        return set((int) v.x(), (int) v.y(), (int) v.z());
+        this.x = (int) v.x();
+        this.y = (int) v.y();
+        this.z = (int) v.z();
+        return this;
+    }
+
+    /**
+     * Set this {@link Vector3i} to the values of v using the given {@link RoundingMode}.
+     * <p>
+     * Note that due to the given vector <code>v</code> storing the components
+     * in double-precision, there is the possibility to lose precision.
+     *
+     * @param v
+     *          the vector to copy from
+     * @param mode
+     *          the {@link RoundingMode} to use
+     * @return this
+     */
+    public Vector3i set(Vector3dc v, int mode) {
+        this.x = Math.roundUsing(v.x(), mode);
+        this.y = Math.roundUsing(v.y(), mode);
+        this.z = Math.roundUsing(v.z(), mode);
+        return this;
+    }
+
+    /**
+     * Set this {@link Vector3i} to the values of v using the given {@link RoundingMode}.
+     * <p>
+     * Note that due to the given vector <code>v</code> storing the components
+     * in double-precision, there is the possibility to lose precision.
+     *
+     * @param v
+     *          the vector to copy from
+     * @param mode
+     *          the {@link RoundingMode} to use
+     * @return this
+     */
+    public Vector3i set(Vector3fc v, int mode) {
+        this.x = Math.roundUsing(v.x(), mode);
+        this.y = Math.roundUsing(v.y(), mode);
+        this.z = Math.roundUsing(v.z(), mode);
+        return this;
     }
 
     /**
@@ -258,7 +373,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return this
      */
     public Vector3i set(Vector2ic v, int z) {
-        return set(v.x(), v.y(), z);
+        this.x = v.x();
+        this.y = v.y();
+        this.z = z;
+        return this;
     }
 
     /**
@@ -269,7 +387,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return this
      */
     public Vector3i set(int d) {
-        return set(d, d, d);
+        this.x = d;
+        this.y = d;
+        this.z = d;
+        return this;
     }
 
     /**
@@ -287,6 +408,20 @@ public class Vector3i implements Externalizable, Vector3ic {
         this.x = x;
         this.y = y;
         this.z = z;
+        return this;
+    }
+
+    /**
+     * Set the three components of this vector to the first three elements of the given array.
+     * 
+     * @param xyz
+     *          the array containing at least three elements
+     * @return this
+     */
+    public Vector3i set(int[] xyz) {
+        this.x = xyz[0];
+        this.y = xyz[1];
+        this.z = xyz[2];
         return this;
     }
 
@@ -308,7 +443,8 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return this
      */
     public Vector3i set(ByteBuffer buffer) {
-        return set(buffer.position(), buffer);
+        MemUtil.INSTANCE.get(this, buffer.position(), buffer);
+        return this;
     }
 
     /**
@@ -345,7 +481,8 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return this
      */
     public Vector3i set(IntBuffer buffer) {
-        return set(buffer.position(), buffer);
+        MemUtil.INSTANCE.get(this, buffer.position(), buffer);
+        return this;
     }
 
     /**
@@ -382,8 +519,7 @@ public class Vector3i implements Externalizable, Vector3ic {
     public Vector3i setFromAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.get(this, address);
+        MemUtil.MemUtilUnsafe.get(this, address);
         return this;
     }
 //#endif
@@ -436,7 +572,8 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @see org.joml.Vector3ic#get(java.nio.IntBuffer)
      */
     public IntBuffer get(IntBuffer buffer) {
-        return get(buffer.position(), buffer);
+        MemUtil.INSTANCE.put(this, buffer.position(), buffer);
+        return buffer;
     }
 
     /* (non-Javadoc)
@@ -451,7 +588,8 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @see org.joml.Vector3ic#get(java.nio.ByteBuffer)
      */
     public ByteBuffer get(ByteBuffer buffer) {
-        return get(buffer.position(), buffer);
+        MemUtil.INSTANCE.put(this, buffer.position(), buffer);
+        return buffer;
     }
 
     /* (non-Javadoc)
@@ -467,8 +605,7 @@ public class Vector3i implements Externalizable, Vector3ic {
     public Vector3ic getToAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.put(this, address);
+        MemUtil.MemUtilUnsafe.put(this, address);
         return this;
     }
 //#endif
@@ -482,7 +619,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i sub(Vector3ic v) {
-        return sub(v.x(), v.y(), v.z(), thisOrNew());
+        this.x = this.x - v.x();
+        this.y = this.y - v.y();
+        this.z = this.z - v.z();
+        return this;
     }
 
     /* (non-Javadoc)
@@ -507,7 +647,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i sub(int x, int y, int z) {
-        return sub(x, y, z, thisOrNew());
+        this.x = this.x - x;
+        this.y = this.y - y;
+        this.z = this.z - z;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -528,7 +671,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i add(Vector3ic v) {
-        return add(v.x(), v.y(), v.z(), thisOrNew());
+        this.x = this.x + v.x();
+        this.y = this.y + v.y();
+        this.z = this.z + v.z();
+        return this;
     }
 
     /* (non-Javadoc)
@@ -553,7 +699,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i add(int x, int y, int z) {
-        return add(x, y, z, thisOrNew());
+        this.x = this.x + x;
+        this.y = this.y + y;
+        this.z = this.z + z;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -575,7 +724,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i mul(int scalar) {
-        return mul(scalar, thisOrNew());
+        this.x = x * scalar;
+        this.y = y * scalar;
+        this.z = z * scalar;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -596,7 +748,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i mul(Vector3ic v) {
-        return mul(v.x(), v.y(), v.z(), thisOrNew());
+        this.x = this.x * v.x();
+        this.y = this.y * v.y();
+        this.z = this.z * v.z();
+        return this;
     }
 
     /* (non-Javadoc)
@@ -621,7 +776,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i mul(int x, int y, int z) {
-        return mul(x, y, z, thisOrNew());
+        this.x = this.x * x;
+        this.y = this.y * y;
+        this.z = this.z * z;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -634,11 +792,55 @@ public class Vector3i implements Externalizable, Vector3ic {
         return dest;
     }
 
+    /**
+     * Divide all components of this {@link Vector3i} by the given scalar value.
+     *
+     * @param scalar
+     *          the scalar to divide by
+     * @return a vector holding the result
+     */
+    public Vector3i div(float scalar) {
+        float invscalar = 1.0f / scalar;
+        this.x = (int) (x * invscalar);
+        this.y = (int) (y * invscalar);
+        this.z = (int) (z * invscalar);
+        return this;
+    }
+
+    public Vector3i div(float scalar, Vector3i dest) {
+        float invscalar = 1.0f / scalar;
+        dest.x = (int) (x * invscalar);
+        dest.y = (int) (y * invscalar);
+        dest.z = (int) (z * invscalar);
+        return dest;
+    }
+
+    /**
+     * Divide all components of this {@link Vector3i} by the given scalar value.
+     *
+     * @param scalar
+     *          the scalar to divide by
+     * @return a vector holding the result
+     */
+    public Vector3i div(int scalar) {
+        this.x = x / scalar;
+        this.y = y / scalar;
+        this.z = z / scalar;
+        return this;
+    }
+
+    public Vector3i div(int scalar, Vector3i dest) {
+        dest.x = x / scalar;
+        dest.y = y / scalar;
+        dest.z = z / scalar;
+        return dest;
+    }
+
     /* (non-Javadoc)
      * @see org.joml.Vector3ic#lengthSquared()
      */
     public long lengthSquared() {
-        return lengthSquared(x, y, z);
+        return x * x + y * y + z * z;
     }
 
     /**
@@ -658,7 +860,7 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @see org.joml.Vector3ic#length()
      */
     public double length() {
-        return Math.sqrt(lengthSquared());
+        return Math.sqrt(x * x + y * y + z * z);
     }
 
     /**
@@ -671,21 +873,27 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return the length squared of the given vector
      */
     public static double length(int x, int y, int z) {
-        return Math.sqrt(lengthSquared(x, y, z));
+        return Math.sqrt(x * x + y * y + z * z);
     }
 
     /* (non-Javadoc)
      * @see org.joml.Vector3ic#distance(org.joml.Vector3ic)
      */
     public double distance(Vector3ic v) {
-        return distance(v.x(), v.y(), v.z());
+        int dx = this.x - v.x();
+        int dy = this.y - v.y();
+        int dz = this.z - v.z();
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     /* (non-Javadoc)
      * @see org.joml.Vector3ic#distance(int, int, int)
      */
     public double distance(int x, int y, int z) {
-        return Math.sqrt(distanceSquared(x, y, z));
+        int dx = this.x - x;
+        int dy = this.y - y;
+        int dz = this.z - z;
+        return Math.sqrt(dx * dx + dy * dy + dz * dz);
     }
 
     /**
@@ -708,7 +916,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @see org.joml.Vector3ic#distanceSquared(org.joml.Vector3ic)
      */
     public long distanceSquared(Vector3ic v) {
-        return distanceSquared(v.x(), v.y(), v.z());
+        int dx = this.x - v.x();
+        int dy = this.y - v.y();
+        int dz = this.z - v.z();
+        return dx * dx + dy * dy + dz * dz;
     }
 
     /* (non-Javadoc)
@@ -772,7 +983,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i zero() {
-        return thisOrNew().set(0, 0, 0);
+        this.x = 0;
+        this.y = 0;
+        this.z = 0;
+        return this;
     }
 
     /**
@@ -815,7 +1029,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i negate() {
-        return negate(thisOrNew());
+        this.x = -x;
+        this.y = -y;
+        this.z = -z;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -836,7 +1053,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i min(Vector3ic v) {
-        return min(v, thisOrNew());
+        this.x = x < v.x() ? x : v.x();
+        this.y = y < v.y() ? y : v.y();
+        this.z = z < v.z() ? z : v.z();
+        return this;
     }
 
     public Vector3i min(Vector3ic v, Vector3i dest) {
@@ -854,7 +1074,10 @@ public class Vector3i implements Externalizable, Vector3ic {
      * @return a vector holding the result
      */
     public Vector3i max(Vector3ic v) {
-        return max(v, thisOrNew());
+        this.x = x > v.x() ? x : v.x();
+        this.y = y > v.y() ? y : v.y();
+        this.z = z > v.z() ? z : v.z();
+        return this;
     }
 
     public Vector3i max(Vector3ic v, Vector3i dest) {
@@ -892,6 +1115,25 @@ public class Vector3i implements Externalizable, Vector3ic {
             return 1;
         }
         return 2;
+    }
+
+    /**
+     * Set <code>this</code> vector's components to their respective absolute values.
+     * 
+     * @return a vector holding the result
+     */
+    public Vector3i absolute() {
+        this.x = Math.abs(this.x);
+        this.y = Math.abs(this.y);
+        this.z = Math.abs(this.z);
+        return this;
+    }
+
+    public Vector3i absolute(Vector3i dest) {
+        dest.x = Math.abs(this.x);
+        dest.y = Math.abs(this.y);
+        dest.z = Math.abs(this.z);
+        return dest;
     }
 
     public int hashCode() {

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -220,6 +220,34 @@ public interface Vector4fc {
     Vector4f fma(float a, Vector4fc b, Vector4f dest);
 
     /**
+     * Add the component-wise multiplication of <code>this * a</code> to <code>b</code>
+     * and store the result in <code>dest</code>.
+     * 
+     * @param a
+     *          the multiplicand
+     * @param b
+     *          the addend
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4f mulAdd(Vector4fc a, Vector4fc b, Vector4f dest);
+
+    /**
+     * Add the component-wise multiplication of <code>this * a</code> to <code>b</code>
+     * and store the result in <code>dest</code>.
+     * 
+     * @param a
+     *          the multiplicand
+     * @param b
+     *          the addend
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4f mulAdd(float a, Vector4fc b, Vector4f dest);
+
+    /**
      * Multiply this Vector4f component-wise by another Vector4f and store the result in <code>dest</code>.
      * 
      * @param v
@@ -288,6 +316,18 @@ public interface Vector4fc {
      * @return dest
      */
     Vector4f mulProject(Matrix4fc mat, Vector4f dest);
+
+    /**
+     * Multiply the given matrix <code>mat</code> with this Vector4f, perform perspective division
+     * and store the <code>(x, y, z)</code> result in <code>dest</code>.
+     * 
+     * @param mat
+     *          the matrix to multiply this vector by
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3f mulProject(Matrix4fc mat, Vector3f dest);
 
     /**
      * Multiply all components of this {@link Vector4f} by the given scalar
@@ -647,6 +687,36 @@ public interface Vector4fc {
     float get(int component) throws IllegalArgumentException;
 
     /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector
+     * using the given {@link RoundingMode}.
+     *
+     * @param mode
+     *          the {@link RoundingMode} to use
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4i get(int mode, Vector4i dest);
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4f get(Vector4f dest);
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4d get(Vector4d dest);
+
+    /**
      * Determine the component with the biggest absolute value.
      * 
      * @return the component index, within <code>[0..3]</code>
@@ -697,13 +767,23 @@ public interface Vector4fc {
 
     /**
      * Determine whether all components are finite floating-point values, that
-     * is, they are not {@link Double#isNaN() NaN} and not
-     * {@link Double#isInfinite() infinity}.
+     * is, they are not {@link Float#isNaN() NaN} and not
+     * {@link Float#isInfinite() infinity}.
      *
      * @return {@code true} if all components are finite floating-point values;
      *         {@code false} otherwise
      */
     boolean isFinite();
+
+    /**
+     * Compute the absolute of each of this vector's components
+     * and store the result into <code>dest</code>.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector4f absolute(Vector4f dest);
 
     /**
      * Compare the vector components of <code>this</code> vector with the given vector using the given <code>delta</code>

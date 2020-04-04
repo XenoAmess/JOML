@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -337,6 +337,16 @@ public interface Vector2ic {
      * @return the component index, within <code>[0..1]</code>
      */
     int minComponent();
+
+    /**
+     * Compute the absolute of each of this vector's components
+     * and store the result into <code>dest</code>.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector2i absolute(Vector2i dest);
 
     /**
      * Get the value of the specified component of this vector.

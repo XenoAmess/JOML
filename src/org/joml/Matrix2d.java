@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019 JOML
+ * Copyright (c) 2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,6 @@ import com.google.gwt.typedarrays.shared.Float64Array;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 //#endif
-import org.joml.internal.MemUtil;
-import org.joml.internal.Options;
-import org.joml.internal.Runtime;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -249,7 +245,7 @@ public class Matrix2d implements Externalizable, Matrix2dc {
      *          the new value
      * @return this
      */
-    public Matrix2d _m00(double m00) {
+    Matrix2d _m00(double m00) {
         this.m00 = m00;
         return this;
     }
@@ -260,7 +256,7 @@ public class Matrix2d implements Externalizable, Matrix2dc {
      *          the new value
      * @return this
      */
-    public Matrix2d _m01(double m01) {
+    Matrix2d _m01(double m01) {
         this.m01 = m01;
         return this;
     }
@@ -271,7 +267,7 @@ public class Matrix2d implements Externalizable, Matrix2dc {
      *          the new value
      * @return this
      */
-    public Matrix2d _m10(double m10) {
+    Matrix2d _m10(double m10) {
         this.m10 = m10;
         return this;
     }
@@ -282,7 +278,7 @@ public class Matrix2d implements Externalizable, Matrix2dc {
      *          the new value
      * @return this
      */
-    public Matrix2d _m11(double m11) {
+    Matrix2d _m11(double m11) {
         this.m11 = m11;
         return this;
     }
@@ -639,8 +635,8 @@ public class Matrix2d implements Externalizable, Matrix2dc {
      * @return the string representation
      */
     public String toString(NumberFormat formatter) {
-        return formatter.format(m00) + " " + formatter.format(m10) + "\n"
-                + formatter.format(m01) + " " + formatter.format(m11) + "\n";
+        return Runtime.format(m00, formatter) + " " + Runtime.format(m10, formatter) + "\n"
+             + Runtime.format(m01, formatter) + " " + Runtime.format(m11, formatter) + "\n";
     }
 
     /**
@@ -770,8 +766,7 @@ public class Matrix2d implements Externalizable, Matrix2dc {
     public Matrix2dc getToAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.put(this, address);
+        MemUtil.MemUtilUnsafe.put(this, address);
         return this;
     }
 //#endif
@@ -842,8 +837,7 @@ public class Matrix2d implements Externalizable, Matrix2dc {
     public Matrix2d setFromAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.get(this, address);
+        MemUtil.MemUtilUnsafe.get(this, address);
         return this;
     }
 //#endif
@@ -1668,11 +1662,16 @@ public class Matrix2d implements Externalizable, Matrix2dc {
      * @see org.joml.Matrix2dc#lerp(org.joml.Matrix2dc, double, org.joml.Matrix2d)
      */
     public Matrix2d lerp(Matrix2dc other, double t, Matrix2d dest) {
-        dest.m00 = m00 + (other.m00() - m00) * t;
-        dest.m01 = m01 + (other.m01() - m01) * t;
-        dest.m10 = m10 + (other.m10() - m10) * t;
-        dest.m11 = m11 + (other.m11() - m11) * t;
+        dest.m00 = Math.fma(other.m00() - m00, t, m00);
+        dest.m01 = Math.fma(other.m01() - m01, t, m01);
+        dest.m10 = Math.fma(other.m10() - m10, t, m10);
+        dest.m11 = Math.fma(other.m11() - m11, t, m11);
         return dest;
+    }
+
+    public boolean isFinite() {
+        return Math.isFinite(m00) && Math.isFinite(m01) &&
+               Math.isFinite(m10) && Math.isFinite(m11);
     }
 
 }

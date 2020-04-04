@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2017-2019 JOML
+ * Copyright (c) 2017-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.joml.internal.Options;
-import org.joml.internal.Runtime;
 
 /**
  * Represents an axis-aligned box defined via the minimum and maximum corner coordinates.
@@ -661,6 +658,56 @@ public class AABBf implements Externalizable {
         return Intersectionf.intersectLineSegmentAab(lineSegment, this, result);
     }
 
+    /**
+     * Apply the given {@link Matrix4fc#isAffine() affine} transformation to this {@link AABBf}.
+     * <p>
+     * The matrix in <code>m</code> <i>must</i> be {@link Matrix4fc#isAffine() affine}.
+     * 
+     * @param m
+     *          the affine transformation matrix
+     * @return this
+     */
+    public AABBf transform(Matrix4fc m) {
+        return transform(m, this);
+    }
+
+    /**
+     * Apply the given {@link Matrix4fc#isAffine() affine} transformation to this
+     * {@link AABBf} and store the resulting AABB into <code>dest</code>.
+     * <p>
+     * The matrix in <code>m</code> <i>must</i> be {@link Matrix4fc#isAffine() affine}.
+     * 
+     * @param m
+     *          the affine transformation matrix
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    public AABBf transform(Matrix4fc m, AABBf dest) {
+        float dx = maxX - minX, dy = maxY - minY, dz = maxZ - minZ;
+        float minx = Float.POSITIVE_INFINITY, miny = Float.POSITIVE_INFINITY, minz = Float.POSITIVE_INFINITY;
+        float maxx = Float.NEGATIVE_INFINITY, maxy = Float.NEGATIVE_INFINITY, maxz = Float.NEGATIVE_INFINITY;
+        for (int i = 0; i < 8; i++) {
+            float x = minX + (i & 1) * dx, y = minY + (i >> 1 & 1) * dy, z = minZ + (i >> 2 & 1) * dz;
+            float tx = m.m00() * x + m.m10() * y + m.m20() * z + m.m30();
+            float ty = m.m01() * x + m.m11() * y + m.m21() * z + m.m31();
+            float tz = m.m02() * x + m.m12() * y + m.m22() * z + m.m32();
+            minx = Math.min(tx, minx);
+            miny = Math.min(ty, miny);
+            minz = Math.min(tz, minz);
+            maxx = Math.max(tx, maxx);
+            maxy = Math.max(ty, maxy);
+            maxz = Math.max(tz, maxz);
+        }
+        dest.minX = minx;
+        dest.minY = miny;
+        dest.minZ = minz;
+        dest.maxX = maxx;
+        dest.maxY = maxy;
+        dest.maxZ = maxz;
+        return dest;
+    }
+
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -715,8 +762,8 @@ public class AABBf implements Externalizable {
      * @return the string representation
      */
     public String toString(NumberFormat formatter) {
-        return "(" + formatter.format(minX) + " " + formatter.format(minY) + " " + formatter.format(minZ) + ") < "
-             + "(" + formatter.format(maxX) + " " + formatter.format(maxY) + " " + formatter.format(maxZ) + ")";
+        return "(" + Runtime.format(minX, formatter) + " " + Runtime.format(minY, formatter) + " " + Runtime.format(minZ, formatter) + ") < "
+             + "(" + Runtime.format(maxX, formatter) + " " + Runtime.format(maxY, formatter) + " " + Runtime.format(maxZ, formatter) + ")";
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {

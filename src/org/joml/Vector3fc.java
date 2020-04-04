@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -215,6 +215,34 @@ public interface Vector3fc {
     Vector3f fma(float a, Vector3fc b, Vector3f dest);
 
     /**
+     * Add the component-wise multiplication of <code>this * a</code> to <code>b</code>
+     * and store the result in <code>dest</code>.
+     * 
+     * @param a
+     *          the multiplicand
+     * @param b
+     *          the addend
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3f mulAdd(Vector3fc a, Vector3fc b, Vector3f dest);
+
+    /**
+     * Add the component-wise multiplication of <code>this * a</code> to <code>b</code>
+     * and store the result in <code>dest</code>.
+     * 
+     * @param a
+     *          the multiplicand
+     * @param b
+     *          the addend
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3f mulAdd(float a, Vector3fc b, Vector3f dest);
+
+    /**
      * Multiply this Vector3f component-wise by another Vector3f and store the result in <code>dest</code>.
      * 
      * @param v
@@ -249,6 +277,22 @@ public interface Vector3fc {
      * @return dest
      */
     Vector3f mulProject(Matrix4fc mat, Vector3f dest);
+
+    /**
+     * Multiply the given matrix <code>mat</code> with this Vector3f, perform perspective division
+     * and store the result in <code>dest</code>.
+     * <p>
+     * This method uses the given <code>w</code> as the fourth vector component.
+     * 
+     * @param mat
+     *          the matrix to multiply this vector by
+     * @param w
+     *          the w component to use
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3f mulProject(Matrix4fc mat, float w, Vector3f dest);
 
     /**
      * Multiply the given matrix with this Vector3f and store the result in <code>dest</code>.
@@ -902,6 +946,36 @@ public interface Vector3fc {
     float get(int component) throws IllegalArgumentException;
 
     /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector
+     * using the given {@link RoundingMode}.
+     *
+     * @param mode
+     *          the {@link RoundingMode} to use
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3i get(int mode, Vector3i dest);
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3f get(Vector3f dest);
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3d get(Vector3d dest);
+
+    /**
      * Determine the component with the biggest absolute value.
      * 
      * @return the component index, within <code>[0..2]</code>
@@ -980,8 +1054,8 @@ public interface Vector3fc {
 
     /**
      * Determine whether all components are finite floating-point values, that
-     * is, they are not {@link Double#isNaN() NaN} and not
-     * {@link Double#isInfinite() infinity}.
+     * is, they are not {@link Float#isNaN() NaN} and not
+     * {@link Float#isInfinite() infinity}.
      *
      * @return {@code true} if all components are finite floating-point values;
      *         {@code false} otherwise

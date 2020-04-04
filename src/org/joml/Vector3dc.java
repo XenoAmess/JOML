@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -348,6 +348,48 @@ public interface Vector3dc {
     Vector3d fma(double a, Vector3fc b, Vector3d dest);
 
     /**
+     * Add the component-wise multiplication of <code>this * a</code> to <code>b</code>
+     * and store the result in <code>dest</code>.
+     * 
+     * @param a
+     *          the multiplicand
+     * @param b
+     *          the addend
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3d mulAdd(Vector3dc a, Vector3dc b, Vector3d dest);
+
+    /**
+     * Add the component-wise multiplication of <code>this * a</code> to <code>b</code>
+     * and store the result in <code>dest</code>.
+     * 
+     * @param a
+     *          the multiplicand
+     * @param b
+     *          the addend
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3d mulAdd(double a, Vector3dc b, Vector3d dest);
+
+    /**
+     * Add the component-wise multiplication of <code>this * a</code> to <code>b</code>
+     * and store the result in <code>dest</code>.
+     * 
+     * @param a
+     *          the multiplicand
+     * @param b
+     *          the addend
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3d mulAdd(Vector3fc a, Vector3dc b, Vector3d dest);
+
+    /**
      * Multiply this Vector3d component-wise by another Vector3f and store the result in <code>dest</code>.
      * 
      * @param v
@@ -390,6 +432,22 @@ public interface Vector3dc {
      * @return dest
      */
     Vector3d div(Vector3dc v, Vector3d dest);
+
+    /**
+     * Multiply the given matrix <code>mat</code> with this Vector3d, perform perspective division
+     * and store the result in <code>dest</code>.
+     * <p>
+     * This method uses the given <code>w</code> as the fourth vector component.
+     * 
+     * @param mat
+     *          the matrix to multiply this vector by
+     * @param w
+     *          the w component to use
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3d mulProject(Matrix4dc mat, double w, Vector3d dest);
 
     /**
      * Multiply the given matrix <code>mat</code> with this Vector3d, perform perspective division
@@ -1177,6 +1235,36 @@ public interface Vector3dc {
      * @throws IllegalArgumentException if <code>component</code> is not within <code>[0..2]</code>
      */
     double get(int component) throws IllegalArgumentException;
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector
+     * using the given {@link RoundingMode}.
+     *
+     * @param mode
+     *          the {@link RoundingMode} to use
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3i get(int mode, Vector3i dest);
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3f get(Vector3f dest);
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector3d get(Vector3d dest);
 
     /**
      * Determine the component with the biggest absolute value.

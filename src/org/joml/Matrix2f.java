@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2019 JOML
+ * Copyright (c) 2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -30,10 +30,6 @@ import com.google.gwt.typedarrays.shared.Float32Array;
 import java.nio.ByteBuffer;
 import java.nio.FloatBuffer;
 //#endif
-import org.joml.internal.MemUtil;
-import org.joml.internal.Options;
-import org.joml.internal.Runtime;
-
 import java.io.Externalizable;
 import java.io.IOException;
 import java.io.ObjectInput;
@@ -140,12 +136,10 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      *          the second column
      */
     public Matrix2f(Vector2fc col0, Vector2fc col1) {
-        if (col0 instanceof Vector2f &&
-            col1 instanceof Vector2f) {
-            MemUtil.INSTANCE.set(this, (Vector2f) col0, (Vector2f) col1);
-        } else {
-            setVector2fc(col0, col1);
-        }
+        m00 = col0.x();
+        m01 = col0.y();
+        m10 = col1.x();
+        m11 = col1.y();
     }
 
     /* (non-Javadoc)
@@ -225,7 +219,7 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      *          the new value
      * @return this
      */
-    public Matrix2f _m00(float m00) {
+    Matrix2f _m00(float m00) {
         this.m00 = m00;
         return this;
     }
@@ -236,7 +230,7 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      *          the new value
      * @return this
      */
-    public Matrix2f _m01(float m01) {
+    Matrix2f _m01(float m01) {
         this.m01 = m01;
         return this;
     }
@@ -247,7 +241,7 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      *          the new value
      * @return this
      */
-    public Matrix2f _m10(float m10) {
+    Matrix2f _m10(float m10) {
         this.m10 = m10;
         return this;
     }
@@ -258,7 +252,7 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      *          the new value
      * @return this
      */
-    public Matrix2f _m11(float m11) {
+    Matrix2f _m11(float m11) {
         this.m11 = m11;
         return this;
     }
@@ -445,19 +439,11 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      * @return this
      */
     public Matrix2f set(Vector2fc col0, Vector2fc col1) {
-        if (col0 instanceof Vector2f &&
-            col1 instanceof Vector2f) {
-            MemUtil.INSTANCE.set(this, (Vector2f) col0, (Vector2f) col1);
-        } else {
-            setVector2fc(col0, col1);
-        }
-        return this;
-    }
-    private void setVector2fc(Vector2fc col0, Vector2fc col1) {
         m00 = col0.x();
         m01 = col0.y();
         m10 = col1.x();
         m11 = col1.y();
+        return this;
     }
 
     /* (non-Javadoc)
@@ -546,8 +532,8 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      * @return the string representation
      */
     public String toString(NumberFormat formatter) {
-        return formatter.format(m00) + " " + formatter.format(m10) + "\n"
-             + formatter.format(m01) + " " + formatter.format(m11) + "\n";
+        return Runtime.format(m00, formatter) + " " + Runtime.format(m10, formatter) + "\n"
+             + Runtime.format(m01, formatter) + " " + Runtime.format(m11, formatter) + "\n";
     }
 
     /**
@@ -585,7 +571,7 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      * @see org.joml.Matrix2fc#getRotation()
      */
     public float getRotation() {
-        return (float) Math.atan2(m01, m11);
+        return Math.atan2(m01, m11);
     }
 
 //#ifdef __GWT__
@@ -676,8 +662,7 @@ public class Matrix2f implements Externalizable, Matrix2fc {
     public Matrix2fc getToAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.put(this, address);
+        MemUtil.MemUtilUnsafe.put(this, address);
         return this;
     }
 //#endif
@@ -749,8 +734,7 @@ public class Matrix2f implements Externalizable, Matrix2fc {
     public Matrix2f setFromAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.get(this, address);
+        MemUtil.MemUtilUnsafe.get(this, address);
         return this;
     }
 //#endif
@@ -962,8 +946,8 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      * @return this
      */
     public Matrix2f rotation(float angle) {
-        float sin = (float) Math.sin(angle);
-        float cos = (float) Math.cosFromSin(sin, angle);
+        float sin = Math.sin(angle);
+        float cos = Math.cosFromSin(sin, angle);
         m00 = cos;
         m01 = sin;
         m10 = -sin;
@@ -1057,8 +1041,8 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      * @see org.joml.Matrix2fc#rotate(float, org.joml.Matrix2f)
      */
     public Matrix2f rotate(float angle, Matrix2f dest) {
-        float s = (float) Math.sin(angle);
-        float c = (float) Math.cosFromSin(s, angle);
+        float s = Math.sin(angle);
+        float c = Math.cosFromSin(s, angle);
         // rotation matrix elements:
         // m00 = c, m01 = s, m10 = -s, m11 = c
         float nm00 = m00 * c + m10 * s;
@@ -1101,8 +1085,8 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      * @see org.joml.Matrix2fc#rotateLocal(float, org.joml.Matrix2f)
      */
     public Matrix2f rotateLocal(float angle, Matrix2f dest) {
-        float s = (float) Math.sin(angle);
-        float c = (float) Math.cosFromSin(s, angle);
+        float s = Math.sin(angle);
+        float c = Math.cosFromSin(s, angle);
         // rotation matrix elements:
         // m00 = c, m01 = s, m10 = -s, m11 = c
         float nm00 = c * m00 - s * m01;
@@ -1360,8 +1344,8 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      * @see org.joml.Matrix2fc#getScale(org.joml.Vector2f)
      */
     public Vector2f getScale(Vector2f dest) {
-        dest.x = (float) Math.sqrt(m00 * m00 + m01 * m01);
-        dest.y = (float) Math.sqrt(m10 * m10 + m11 * m11);
+        dest.x = Math.sqrt(m00 * m00 + m01 * m01);
+        dest.y = Math.sqrt(m10 * m10 + m11 * m11);
         return dest;
     }
 
@@ -1567,11 +1551,16 @@ public class Matrix2f implements Externalizable, Matrix2fc {
      * @see org.joml.Matrix2fc#lerp(org.joml.Matrix2fc, float, org.joml.Matrix2f)
      */
     public Matrix2f lerp(Matrix2fc other, float t, Matrix2f dest) {
-        dest.m00 = m00 + (other.m00() - m00) * t;
-        dest.m01 = m01 + (other.m01() - m01) * t;
-        dest.m10 = m10 + (other.m10() - m10) * t;
-        dest.m11 = m11 + (other.m11() - m11) * t;
+        dest.m00 = Math.fma(other.m00() - m00, t, m00);
+        dest.m01 = Math.fma(other.m01() - m01, t, m01);
+        dest.m10 = Math.fma(other.m10() - m10, t, m10);
+        dest.m11 = Math.fma(other.m11() - m11, t, m11);
         return dest;
+    }
+
+    public boolean isFinite() {
+        return Math.isFinite(m00) && Math.isFinite(m01) &&
+               Math.isFinite(m10) && Math.isFinite(m11);
     }
 
 }

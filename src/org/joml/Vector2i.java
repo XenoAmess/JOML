@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015-2019 Richard Greenlees
+ * Copyright (c) 2015-2020 Richard Greenlees
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -33,11 +33,6 @@ import java.nio.IntBuffer;
 //#endif
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.joml.Math;
-import org.joml.internal.MemUtil;
-import org.joml.internal.Options;
-import org.joml.internal.Runtime;
 
 /**
  * Represents a 2D vector with single-precision.
@@ -102,6 +97,46 @@ public class Vector2i implements Externalizable, Vector2ic {
         y = v.y();
     }
 
+    /**
+     * Create a new {@link Vector2i} and initialize its components to the rounded value of
+     * the given vector.
+     *
+     * @param v
+     *          the {@link Vector2fc} to round and copy the values from
+     * @param mode
+     *          the {@link RoundingMode} to use
+     */
+    public Vector2i(Vector2fc v, int mode) {
+        x = Math.roundUsing(v.x(), mode);
+        y = Math.roundUsing(v.y(), mode);
+    }
+
+    /**
+     * Create a new {@link Vector2i} and initialize its components to the rounded value of
+     * the given vector.
+     *
+     * @param v
+     *          the {@link Vector2dc} to round and copy the values from
+     * @param mode
+     *          the {@link RoundingMode} to use
+     */
+    public Vector2i(Vector2dc v, int mode) {
+        x = Math.roundUsing(v.x(), mode);
+        y = Math.roundUsing(v.y(), mode);
+    }
+
+    /**
+     * Create a new {@link Vector2i} and initialize its two components from the first
+     * two elements of the given array.
+     * 
+     * @param xy
+     *          the array containing at least three elements
+     */
+    public Vector2i(int[] xy) {
+        this.x = xy[0];
+        this.y = xy[1];
+    }
+
 //#ifdef __HAS_NIO__
     /**
      * Create a new {@link Vector2i} and read this vector from the supplied
@@ -120,7 +155,7 @@ public class Vector2i implements Externalizable, Vector2ic {
      *          values will be read in <code>x, y</code> order
      */
     public Vector2i(ByteBuffer buffer) {
-        this(buffer.position(), buffer);
+        MemUtil.INSTANCE.get(this, buffer.position(), buffer);
     }
 
     /**
@@ -156,7 +191,7 @@ public class Vector2i implements Externalizable, Vector2ic {
      *          values will be read in <code>x, y</code> order
      */
     public Vector2i(IntBuffer buffer) {
-        this(buffer.position(), buffer);
+        MemUtil.INSTANCE.get(this, buffer.position(), buffer);
     }
 
     /**
@@ -175,10 +210,6 @@ public class Vector2i implements Externalizable, Vector2ic {
         MemUtil.INSTANCE.get(this, index, buffer);
     }
 //#endif
-
-    private Vector2i thisOrNew() {
-        return this;
-    }
 
     /* (non-Javadoc)
      * @see org.joml.Vector2ic#x()
@@ -202,7 +233,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return this
      */
     public Vector2i set(int s) {
-        return set(s, s);
+        this.x = s;
+        this.y = s;
+        return this;
     }
 
     /**
@@ -228,11 +261,13 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return this
      */
     public Vector2i set(Vector2ic v) {
-        return set(v.x(), v.y());
+        this.x = v.x();
+        this.y = v.y();
+        return this;
     }
 
     /**
-     * Set this {@link Vector2i} to the values of v.
+     * Set this {@link Vector2i} to the values of v using {@link RoundingMode#TRUNCATE} rounding.
      * <p>
      * Note that due to the given vector <code>v</code> storing the components
      * in double-precision, there is the possibility to lose precision.
@@ -242,7 +277,58 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return this
      */
     public Vector2i set(Vector2dc v) {
-        return set((int) v.x(), (int) v.y());
+        this.x = (int) v.x();
+        this.y = (int) v.y();
+        return this;
+    }
+
+    /**
+     * Set this {@link Vector2i} to the values of v using the given {@link RoundingMode}.
+     * <p>
+     * Note that due to the given vector <code>v</code> storing the components
+     * in double-precision, there is the possibility to lose precision.
+     *
+     * @param v
+     *          the vector to copy from
+     * @param mode
+     *          the {@link RoundingMode} to use
+     * @return this
+     */
+    public Vector2i set(Vector2dc v, int mode) {
+        this.x = Math.roundUsing(v.x(), mode);
+        this.y = Math.roundUsing(v.y(), mode);
+        return this;
+    }
+
+    /**
+     * Set this {@link Vector2i} to the values of v using the given {@link RoundingMode}.
+     * <p>
+     * Note that due to the given vector <code>v</code> storing the components
+     * in double-precision, there is the possibility to lose precision.
+     *
+     * @param v
+     *          the vector to copy from
+     * @param mode
+     *          the {@link RoundingMode} to use
+     * @return this
+     */
+    public Vector2i set(Vector2fc v, int mode) {
+        this.x = Math.roundUsing(v.x(), mode);
+        this.y = Math.roundUsing(v.y(), mode);
+        return this;
+    }
+
+    /**
+     * Set the two components of this vector to the first two elements of the given array.
+     * 
+     * @param xy
+     *          the array containing at least two elements
+     * @return this
+     */
+    public Vector2i set(int[] xy) {
+        this.x = xy[0];
+        this.y = xy[1];
+        return this;
     }
 
 //#ifdef __HAS_NIO__
@@ -263,7 +349,8 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return this
      */
     public Vector2i set(ByteBuffer buffer) {
-        return set(buffer.position(), buffer);
+        MemUtil.INSTANCE.get(this, buffer.position(), buffer);
+        return this;
     }
 
     /**
@@ -300,7 +387,8 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return this
      */
     public Vector2i set(IntBuffer buffer) {
-        return set(buffer.position(), buffer);
+        MemUtil.INSTANCE.get(this, buffer.position(), buffer);
+        return this;
     }
 
     /**
@@ -337,8 +425,7 @@ public class Vector2i implements Externalizable, Vector2ic {
     public Vector2i setFromAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.get(this, address);
+        MemUtil.MemUtilUnsafe.get(this, address);
         return this;
     }
 //#endif
@@ -386,7 +473,8 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @see org.joml.Vector2ic#get(java.nio.ByteBuffer)
      */
     public ByteBuffer get(ByteBuffer buffer) {
-        return get(buffer.position(), buffer);
+        MemUtil.INSTANCE.put(this, buffer.position(), buffer);
+        return buffer;
     }
 
     /* (non-Javadoc)
@@ -401,7 +489,8 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @see org.joml.Vector2ic#get(java.nio.IntBuffer)
      */
     public IntBuffer get(IntBuffer buffer) {
-        return get(buffer.position(), buffer);
+        MemUtil.INSTANCE.put(this, buffer.position(), buffer);
+        return buffer;
     }
 
     /* (non-Javadoc)
@@ -417,8 +506,7 @@ public class Vector2i implements Externalizable, Vector2ic {
     public Vector2ic getToAddress(long address) {
         if (Options.NO_UNSAFE)
             throw new UnsupportedOperationException("Not supported when using joml.nounsafe");
-        MemUtil.MemUtilUnsafe unsafe = (MemUtil.MemUtilUnsafe) MemUtil.INSTANCE;
-        unsafe.put(this, address);
+        MemUtil.MemUtilUnsafe.put(this, address);
         return this;
     }
 //#endif
@@ -432,7 +520,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i sub(Vector2ic v) {
-        return sub(v, thisOrNew());
+        this.x = x - v.x();
+        this.y = y - v.y();
+        return this;
     }
 
     /* (non-Javadoc)
@@ -454,7 +544,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i sub(int x, int y) {
-        return sub(x, y, thisOrNew());
+        this.x = this.x - x;
+        this.y = this.y - y;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -470,7 +562,7 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @see org.joml.Vector2ic#lengthSquared()
      */
     public long lengthSquared() {
-        return lengthSquared(x, y);
+        return x * x + y * y;
     }
 
     /**
@@ -489,7 +581,7 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @see org.joml.Vector2ic#length()
      */
     public double length() {
-        return Math.sqrt(lengthSquared());
+        return Math.sqrt(x * x + y * y);
     }
 
     /**
@@ -501,21 +593,25 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return the length squared of the given vector
      */
     public static double length(int x, int y) {
-        return Math.sqrt(lengthSquared(x, y));
+        return Math.sqrt(x * x + y * y);
     }
 
     /* (non-Javadoc)
      * @see org.joml.Vector2ic#distance(org.joml.Vector2ic)
      */
     public double distance(Vector2ic v) {
-        return Math.sqrt(distanceSquared(v));
+        int dx = this.x - v.x();
+        int dy = this.y - v.y();
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     /* (non-Javadoc)
      * @see org.joml.Vector2ic#distance(int, int)
      */
     public double distance(int x, int y) {
-        return Math.sqrt(distanceSquared(x, y));
+        int dx = this.x - x;
+        int dy = this.y - y;
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     /* (non-Javadoc)
@@ -566,7 +662,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return the euclidean distance
      */
     public static double distance(int x1, int y1, int x2, int y2) {
-        return Math.sqrt(distanceSquared(x1, y1, x2, y2));
+        int dx = x1 - x2;
+        int dy = y1 - y2;
+        return Math.sqrt(dx * dx + dy * dy);
     }
 
     /**
@@ -596,7 +694,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i add(Vector2ic v) {
-        return add(v, thisOrNew());
+        this.x = x + v.x();
+        this.y = y + v.y();
+        return this;
     }
 
     /* (non-Javadoc)
@@ -618,7 +718,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i add(int x, int y) {
-        return add(x, y, thisOrNew());
+        this.x = this.x + x;
+        this.y = this.y + y;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -639,7 +741,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i mul(int scalar) {
-        return mul(scalar, thisOrNew());
+        this.x = x * scalar;
+        this.y = y * scalar;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -659,7 +763,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i mul(Vector2ic v) {
-        return mul(v, thisOrNew());
+        this.x = x * v.x();
+        this.y = y * v.y();
+        return this;
     }
 
     /* (non-Javadoc)
@@ -681,7 +787,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i mul(int x, int y) {
-        return mul(x, y, thisOrNew());
+        this.x = this.x * x;
+        this.y = this.y * y;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -699,7 +807,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i zero() {
-        return thisOrNew().set(0, 0);
+        this.x = 0;
+        this.y = 0;
+        return this;
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -718,7 +828,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i negate() {
-        return negate(thisOrNew());
+        this.x = -x;
+        this.y = -y;
+        return this;
     }
 
     /* (non-Javadoc)
@@ -738,7 +850,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i min(Vector2ic v) {
-        return min(v, thisOrNew());
+        this.x = x < v.x() ? x : v.x();
+        this.y = y < v.y() ? y : v.y();
+        return this;
     }
 
     public Vector2i min(Vector2ic v, Vector2i dest) {
@@ -755,7 +869,9 @@ public class Vector2i implements Externalizable, Vector2ic {
      * @return a vector holding the result
      */
     public Vector2i max(Vector2ic v) {
-        return max(v, thisOrNew());
+        this.x = x > v.x() ? x : v.x();
+        this.y = y > v.y() ? y : v.y();
+        return this;
     }
 
     public Vector2i max(Vector2ic v, Vector2i dest) {
@@ -784,6 +900,23 @@ public class Vector2i implements Externalizable, Vector2ic {
         if (absX < absY)
             return 0;
         return 1;
+    }
+
+    /**
+     * Set <code>this</code> vector's components to their respective absolute values.
+     * 
+     * @return a vector holding the result
+     */
+    public Vector2i absolute() {
+        this.x = Math.abs(this.x);
+        this.y = Math.abs(this.y);
+        return this;
+    }
+
+    public Vector2i absolute(Vector2i dest) {
+        dest.x = Math.abs(this.x);
+        dest.y = Math.abs(this.y);
+        return dest;
     }
 
     public int hashCode() {

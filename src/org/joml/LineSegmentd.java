@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2017-2019 JOML
+ * Copyright (c) 2017-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.joml.internal.Options;
-import org.joml.internal.Runtime;
 
 /**
  * Represents an undirected line segment between two points.
@@ -190,8 +187,8 @@ public class LineSegmentd implements Externalizable {
      * @return the string representation
      */
     public String toString(NumberFormat formatter) {
-        return "(" + formatter.format(aX) + " " + formatter.format(aY) + " " + formatter.format(aZ) + ") - "
-             + "(" + formatter.format(bX) + " " + formatter.format(bY) + " " + formatter.format(bZ) + ")";
+        return "(" + Runtime.format(aX, formatter) + " " + Runtime.format(aY, formatter) + " " + Runtime.format(aZ, formatter) + ") - "
+             + "(" + Runtime.format(bX, formatter) + " " + Runtime.format(bY, formatter) + " " + Runtime.format(bZ, formatter) + ")";
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015-2019 Kai Burjack
+ * Copyright (c) 2015-2020 Kai Burjack
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -144,7 +144,7 @@ public class FrustumRayBuilder {
         float dy = y1y + (y2y - y1y) * x;
         float dz = y1z + (y2z - y1z) * x;
         // normalize the vector
-        float invLen = (float) (1.0 / Math.sqrt(dx * dx + dy * dy + dz * dz));
+        float invLen = Math.invsqrt(dx * dx + dy * dy + dz * dz);
         dir.x = dx * invLen;
         dir.y = dy * invLen;
         dir.z = dz * invLen;

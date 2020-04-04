@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2015-2019 Richard Greenlees
+ * Copyright (c) 2015-2020 Richard Greenlees
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.joml.internal.Options;
-import org.joml.internal.Runtime;
 
 /**
  * Quaternion of 4 double-precision floats which can represent rotation and uniform scaling.
@@ -88,10 +85,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
     }
 
     /**
-     * Create a new {@link Quaterniond} and initialize its components to the same values as the given {@link Quaterniond}.
+     * Create a new {@link Quaterniond} and initialize its components to the same values as the given {@link Quaterniondc}.
      * 
      * @param source
-     *          the {@link Quaterniond} to take the component values from
+     *          the {@link Quaterniondc} to take the component values from
      */
     public Quaterniond(Quaterniondc source) {
         x = source.x();
@@ -175,7 +172,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @return this
      */
     public Quaterniond normalize() {
-        double invNorm = 1.0 / Math.sqrt(x * x + y * y + z * z + w * w);
+        double invNorm = Math.invsqrt(lengthSquared());
         x *= invNorm;
         y *= invNorm;
         z *= invNorm;
@@ -187,7 +184,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#normalize(org.joml.Quaterniond)
      */
     public Quaterniond normalize(Quaterniond dest) {
-        double invNorm = 1.0 / Math.sqrt(x * x + y * y + z * z + w * w);
+        double invNorm = Math.invsqrt(lengthSquared());
         dest.x = x * invNorm;
         dest.y = y * invNorm;
         dest.z = z * invNorm;
@@ -260,8 +257,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#angle()
      */
     public double angle() {
-        double angle = 2.0 * Math.acos(w);
-        return angle <= Math.PI ? angle : Math.PI + Math.PI - angle;
+        return 2.0 * Math.safeAcos(w);
     }
 
     /* (non-Javadoc)
@@ -292,6 +288,66 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         return dest.set(this);
     }
 
+    /* (non-Javadoc)
+     * @see org.joml.Quaterniondc#get(org.joml.AxisAngle4f)
+     */
+    public AxisAngle4f get(AxisAngle4f dest) {
+        double x = this.x;
+        double y = this.y;
+        double z = this.z;
+        double w = this.w;
+        if (w > 1.0) {
+            double invNorm = Math.invsqrt(lengthSquared());
+            x *= invNorm;
+            y *= invNorm;
+            z *= invNorm;
+            w *= invNorm;
+        }
+        dest.angle = (float) (2.0 * Math.acos(w));
+        double s = Math.sqrt(1.0 - w * w);
+        if (s < 0.001) {
+            dest.x = (float) x;
+            dest.y = (float) y;
+            dest.z = (float) z;
+        } else {
+            s = 1.0 / s;
+            dest.x = (float) (x * s);
+            dest.y = (float) (y * s);
+            dest.z = (float) (z * s);
+        }
+        return dest;
+    }
+
+    /* (non-Javadoc)
+     * @see org.joml.Quaterniondc#get(org.joml.AxisAngle4d)
+     */
+    public AxisAngle4d get(AxisAngle4d dest) {
+        double x = this.x;
+        double y = this.y;
+        double z = this.z;
+        double w = this.w;
+        if (w > 1.0) {
+            double invNorm = Math.invsqrt(lengthSquared());
+            x *= invNorm;
+            y *= invNorm;
+            z *= invNorm;
+            w *= invNorm;
+        }
+        dest.angle = 2.0 * Math.acos(w);
+        double s = Math.sqrt(1.0 - w * w);
+        if (s < 0.001) {
+            dest.x = x;
+            dest.y = y;
+            dest.z = z;
+        } else {
+            s = 1.0 / s;
+            dest.x = x * s;
+            dest.y = y * s;
+            dest.z = z * s;
+        }
+        return dest;
+    }
+
     /**
      * Set the given {@link Quaterniond} to the values of <code>this</code>.
      * 
@@ -302,6 +358,19 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @return the passed in destination
      */
     public Quaterniond get(Quaterniond dest) {
+        return dest.set(this);
+    }
+
+    /**
+     * Set the given {@link Quaternionf} to the values of <code>this</code>.
+     * 
+     * @see #set(Quaterniondc)
+     * 
+     * @param dest
+     *          the {@link Quaternionf} to set
+     * @return the passed in destination
+     */
+    public Quaternionf get(Quaternionf dest) {
         return dest.set(this);
     }
 
@@ -423,9 +492,9 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         double nm00 = m00, nm01 = m01, nm02 = m02;
         double nm10 = m10, nm11 = m11, nm12 = m12;
         double nm20 = m20, nm21 = m21, nm22 = m22;
-        double lenX = 1.0 / Math.sqrt(m00 * m00 + m01 * m01 + m02 * m02);
-        double lenY = 1.0 / Math.sqrt(m10 * m10 + m11 * m11 + m12 * m12);
-        double lenZ = 1.0 / Math.sqrt(m20 * m20 + m21 * m21 + m22 * m22);
+        double lenX = Math.invsqrt(m00 * m00 + m01 * m01 + m02 * m02);
+        double lenY = Math.invsqrt(m10 * m10 + m11 * m11 + m12 * m12);
+        double lenZ = Math.invsqrt(m20 * m20 + m21 * m21 + m22 * m22);
         nm00 *= lenX; nm01 *= lenX; nm02 *= lenX;
         nm10 *= lenY; nm11 *= lenY; nm12 *= lenY;
         nm20 *= lenZ; nm21 *= lenZ; nm22 *= lenZ;
@@ -728,11 +797,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#mul(org.joml.Quaterniondc, org.joml.Quaterniond)
      */
     public Quaterniond mul(Quaterniondc q, Quaterniond dest) {
-        dest.set(w * q.x() + x * q.w() + y * q.z() - z * q.y(),
-                 w * q.y() - x * q.z() + y * q.w() + z * q.x(),
-                 w * q.z() + x * q.y() - y * q.x() + z * q.w(),
-                 w * q.w() - x * q.x() - y * q.y() - z * q.z());
-        return dest;
+        return mul(q.x(), q.y(), q.z(), q.w(), dest);
     }
 
     /**
@@ -757,22 +822,17 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @return this
      */
     public Quaterniond mul(double qx, double qy, double qz, double qw) {
-        set(w * qx + x * qw + y * qz - z * qy,
-            w * qy - x * qz + y * qw + z * qx,
-            w * qz + x * qy - y * qx + z * qw,
-            w * qw - x * qx - y * qy - z * qz);
-        return this;
+        return mul(qx, qy, qz, qw, this);
     }
 
     /* (non-Javadoc)
      * @see org.joml.Quaterniondc#mul(double, double, double, double, org.joml.Quaterniond)
      */
     public Quaterniond mul(double qx, double qy, double qz, double qw, Quaterniond dest) {
-        dest.set(w * qx + x * qw + y * qz - z * qy,
-                 w * qy - x * qz + y * qw + z * qx,
-                 w * qz + x * qy - y * qx + z * qw,
-                 w * qw - x * qx - y * qy - z * qz);
-        return dest;
+        return dest.set(Math.fma(w, qx, Math.fma(x, qw, Math.fma(y, qz, -z * qy))),
+                        Math.fma(w, qy, Math.fma(-x, qz, Math.fma(y, qw, z * qx))),
+                        Math.fma(w, qz, Math.fma(x, qy, Math.fma(-y, qx, z * qw))),
+                        Math.fma(w, qw, Math.fma(-x, qx, Math.fma(-y, qy, -z * qz))));
     }
 
     /**
@@ -796,11 +856,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#premul(org.joml.Quaterniondc, org.joml.Quaterniond)
      */
     public Quaterniond premul(Quaterniondc q, Quaterniond dest) {
-        dest.set(q.w() * x + q.x() * w + q.y() * z - q.z() * y,
-                 q.w() * y - q.x() * z + q.y() * w + q.z() * x,
-                 q.w() * z + q.x() * y - q.y() * x + q.z() * w,
-                 q.w() * w - q.x() * x - q.y() * y - q.z() * z);
-        return dest;
+        return premul(q.x(), q.y(), q.z(), q.w(), dest);
     }
 
     /**
@@ -830,185 +886,193 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#premul(double, double, double, double, org.joml.Quaterniond)
      */
     public Quaterniond premul(double qx, double qy, double qz, double qw, Quaterniond dest) {
-        dest.set(qw * x + qx * w + qy * z - qz * y,
-                 qw * y - qx * z + qy * w + qz * x,
-                 qw * z + qx * y - qy * x + qz * w,
-                 qw * w - qx * x - qy * y - qz * z);
-        return dest;
+        return dest.set(Math.fma(qw, x, Math.fma(qx, w, Math.fma(qy, z, -qz * y))),
+                        Math.fma(qw, y, Math.fma(-qx, z, Math.fma(qy, w, qz * x))),
+                        Math.fma(qw, z, Math.fma(qx, y, Math.fma(-qy, x, qz * w))),
+                        Math.fma(qw, w, Math.fma(-qx, x, Math.fma(-qy, y, -qz * z))));
     }
 
-    /* (non-Javadoc)
-     * @see org.joml.Quaterniondc#transform(org.joml.Vector3d)
-     */
     public Vector3d transform(Vector3d vec){
         return transform(vec.x, vec.y, vec.z, vec);
     }
 
+    public Vector3d transformInverse(Vector3d vec){
+        return transformInverse(vec.x, vec.y, vec.z, vec);
+    }
+
+    public Vector3d transformUnit(Vector3d vec){
+        return transformUnit(vec.x, vec.y, vec.z, vec);
+    }
+
+    public Vector3d transformInverseUnit(Vector3d vec){
+        return transformInverseUnit(vec.x, vec.y, vec.z, vec);
+    }
+
     public Vector3d transformPositiveX(Vector3d dest) {
-        double w2 = w * w;
-        double x2 = x * x;
-        double y2 = y * y;
-        double z2 = z * z;
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
         double zw = z * w;
         double xy = x * y;
         double xz = x * z;
         double yw = y * w;
-        dest.x = w2 + x2 - z2 - y2;
+        dest.x = ww + xx - zz - yy;
         dest.y = xy + zw + zw + xy;
         dest.z = xz - yw + xz - yw;
         return dest;
     }
 
     public Vector4d transformPositiveX(Vector4d dest) {
-        double w2 = w * w;
-        double x2 = x * x;
-        double y2 = y * y;
-        double z2 = z * z;
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
         double zw = z * w;
         double xy = x * y;
         double xz = x * z;
         double yw = y * w;
-        dest.x = w2 + x2 - z2 - y2;
+        dest.x = ww + xx - zz - yy;
         dest.y = xy + zw + zw + xy;
         dest.z = xz - yw + xz - yw;
         return dest;
     }
 
     public Vector3d transformUnitPositiveX(Vector3d dest) {
-        double y2 = y * y;
-        double z2 = z * z;
+        double yy = y * y;
+        double zz = z * z;
         double xy = x * y;
         double xz = x * z;
         double yw = y * w;
         double zw = z * w;
-        dest.x = 1.0 - y2 - y2 - z2 - z2;
+        dest.x = 1.0 - yy - yy - zz - zz;
         dest.y = xy + zw + xy + zw;
         dest.z = xz - yw + xz - yw;
         return dest;
     }
 
     public Vector4d transformUnitPositiveX(Vector4d dest) {
-        double y2 = y * y;
-        double z2 = z * z;
+        double yy = y * y;
+        double zz = z * z;
         double xy = x * y;
         double xz = x * z;
         double yw = y * w;
         double zw = z * w;
-        dest.x = 1.0 - y2 - y2 - z2 - z2;
+        dest.x = 1.0 - yy - yy - zz - zz;
         dest.y = xy + zw + xy + zw;
         dest.z = xz - yw + xz - yw;
         return dest;
     }
 
     public Vector3d transformPositiveY(Vector3d dest) {
-        double w2 = w * w;
-        double x2 = x * x;
-        double y2 = y * y;
-        double z2 = z * z;
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
         double zw = z * w;
         double xy = x * y;
         double yz = y * z;
         double xw = x * w;
         dest.x = -zw + xy - zw + xy;
-        dest.y = y2 - z2 + w2 - x2;
+        dest.y = yy - zz + ww - xx;
         dest.z = yz + yz + xw + xw;
         return dest;
     }
 
     public Vector4d transformPositiveY(Vector4d dest) {
-        double w2 = w * w;
-        double x2 = x * x;
-        double y2 = y * y;
-        double z2 = z * z;
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
         double zw = z * w;
         double xy = x * y;
         double yz = y * z;
         double xw = x * w;
         dest.x = -zw + xy - zw + xy;
-        dest.y = y2 - z2 + w2 - x2;
+        dest.y = yy - zz + ww - xx;
         dest.z = yz + yz + xw + xw;
         return dest;
     }
 
     public Vector4d transformUnitPositiveY(Vector4d dest) {
-        double x2 = x * x;
-        double z2 = z * z;
+        double xx = x * x;
+        double zz = z * z;
         double xy = x * y;
         double yz = y * z;
         double xw = x * w;
         double zw = z * w;
         dest.x = xy - zw + xy - zw;
-        dest.y = 1.0 - x2 - x2 - z2 - z2;
+        dest.y = 1.0 - xx - xx - zz - zz;
         dest.z = yz + yz + xw + xw;
         return dest;
     }
 
     public Vector3d transformUnitPositiveY(Vector3d dest) {
-        double x2 = x * x;
-        double z2 = z * z;
+        double xx = x * x;
+        double zz = z * z;
         double xy = x * y;
         double yz = y * z;
         double xw = x * w;
         double zw = z * w;
         dest.x = xy - zw + xy - zw;
-        dest.y = 1.0 - x2 - x2 - z2 - z2;
+        dest.y = 1.0 - xx - xx - zz - zz;
         dest.z = yz + yz + xw + xw;
         return dest;
     }
 
     public Vector3d transformPositiveZ(Vector3d dest) {
-        double w2 = w * w;
-        double x2 = x * x;
-        double y2 = y * y;
-        double z2 = z * z;
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
         double xz = x * z;
         double yw = y * w;
         double yz = y * z;
         double xw = x * w;
         dest.x = yw + xz + xz + yw;
         dest.y = yz + yz - xw - xw;
-        dest.z = z2 - y2 - x2 + w2;
+        dest.z = zz - yy - xx + ww;
         return dest;
     }
 
     public Vector4d transformPositiveZ(Vector4d dest) {
-        double w2 = w * w;
-        double x2 = x * x;
-        double y2 = y * y;
-        double z2 = z * z;
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
         double xz = x * z;
         double yw = y * w;
         double yz = y * z;
         double xw = x * w;
         dest.x = yw + xz + xz + yw;
         dest.y = yz + yz - xw - xw;
-        dest.z = z2 - y2 - x2 + w2;
+        dest.z = zz - yy - xx + ww;
         return dest;
     }
 
     public Vector4d transformUnitPositiveZ(Vector4d dest) {
-        double x2 = x * x;
-        double y2 = y * y;
+        double xx = x * x;
+        double yy = y * y;
         double xz = x * z;
         double yz = y * z;
         double xw = x * w;
         double yw = y * w;
         dest.x = xz + yw + xz + yw;
         dest.y = yz + yz - xw - xw;
-        dest.z = 1.0 - x2 - x2 - y2 - y2;
+        dest.z = 1.0 - xx - xx - yy - yy;
         return dest;
     }
 
     public Vector3d transformUnitPositiveZ(Vector3d dest) {
-        double x2 = x * x;
-        double y2 = y * y;
+        double xx = x * x;
+        double yy = y * y;
         double xz = x * z;
         double yz = y * z;
         double xw = x * w;
         double yw = y * w;
         dest.x = xz + yw + xz + yw;
         dest.y = yz + yz - xw - xw;
-        dest.z = 1.0 - x2 - x2 - y2 - y2;
+        dest.z = 1.0 - xx - xx - yy - yy;
         return dest;
     }
 
@@ -1019,6 +1083,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         return transform(vec, vec);
     }
 
+    public Vector4d transformInverse(Vector4d vec){
+        return transformInverse(vec, vec);
+    }
+
     /* (non-Javadoc)
      * @see org.joml.Quaterniondc#transform(org.joml.Vector3dc, org.joml.Vector3d)
      */
@@ -1026,33 +1094,31 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         return transform(vec.x(), vec.y(), vec.z(), dest);
     }
 
+    public Vector3d transformInverse(Vector3dc vec, Vector3d dest) {
+        return transformInverse(vec.x(), vec.y(), vec.z(), dest);
+    }
+
     /* (non-Javadoc)
      * @see org.joml.Quaterniondc#transform(double, double, double, org.joml.Vector3d)
      */
     public Vector3d transform(double x, double y, double z, Vector3d dest) {
-        double w2 = this.w * this.w;
-        double x2 = this.x * this.x;
-        double y2 = this.y * this.y;
-        double z2 = this.z * this.z;
-        double zw = this.z * this.w, zwd = zw + zw;
-        double xy = this.x * this.y, xyd = xy + xy;
-        double xz = this.x * this.z, xzd = xz + xz;
-        double yw = this.y * this.w, ywd = yw + yw;
-        double yz = this.y * this.z, yzd = yz + yz;
-        double xw = this.x * this.w, xwd = xw + xw;
-        double m00 = w2 + x2 - z2 - y2;
-        double m01 = xyd + zwd;
-        double m02 = xzd - ywd;
-        double m10 = xyd - zwd;
-        double m11 = y2 - z2 + w2 - x2;
-        double m12 = yzd + xwd;
-        double m20 = ywd + xzd;
-        double m21 = yzd - xwd;
-        double m22 = z2 - y2 - x2 + w2;
-        dest.x = m00 * x + m10 * y + m20 * z;
-        dest.y = m01 * x + m11 * y + m21 * z;
-        dest.z = m02 * x + m12 * y + m22 * z;
-        return dest;
+        double xx = this.x * this.x, yy = this.y * this.y, zz = this.z * this.z, ww = this.w * this.w;
+        double xy = this.x * this.y, xz = this.x * this.z, yz = this.y * this.z, xw = this.x * this.w;
+        double zw = this.z * this.w, yw = this.y * this.w, k = 1 / (xx + yy + zz + ww);
+        return dest.set(Math.fma((xx - yy - zz + ww) * k, x, Math.fma(2 * (xy - zw) * k, y, (2 * (xz + yw) * k) * z)),
+                        Math.fma(2 * (xy + zw) * k, x, Math.fma((yy - xx - zz + ww) * k, y, (2 * (yz - xw) * k) * z)),
+                        Math.fma(2 * (xz - yw) * k, x, Math.fma(2 * (yz + xw) * k, y, ((zz - xx - yy + ww) * k) * z)));
+    }
+
+    public Vector3d transformInverse(double x, double y, double z, Vector3d dest) {
+        double n = 1.0 / Math.fma(this.x, this.x, Math.fma(this.y, this.y, Math.fma(this.z, this.z, this.w * this.w)));
+        double qx = this.x * n, qy = this.y * n, qz = this.z * n, qw = this.w * n;
+        double xx = qx * qx, yy = qy * qy, zz = qz * qz, ww = qw * qw;
+        double xy = qx * qy, xz = qx * qz, yz = qy * qz, xw = qx * qw;
+        double zw = qz * qw, yw = qy * qw, k = 1 / (xx + yy + zz + ww);
+        return dest.set(Math.fma((xx - yy - zz + ww) * k, x, Math.fma(2 * (xy + zw) * k, y, (2 * (xz - yw) * k) * z)),
+                        Math.fma(2 * (xy - zw) * k, x, Math.fma((yy - xx - zz + ww) * k, y, (2 * (yz + xw) * k) * z)),
+                        Math.fma(2 * (xz + yw) * k, x, Math.fma(2 * (yz - xw) * k, y, ((zz - xx - yy + ww) * k) * z)));
     }
 
     /* (non-Javadoc)
@@ -1062,40 +1128,423 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         return transform(vec.x(), vec.y(), vec.z(), dest);
     }
 
+    public Vector4d transformInverse(Vector4dc vec, Vector4d dest) {
+        return transformInverse(vec.x(), vec.y(), vec.z(), dest);
+    }
+
     /* (non-Javadoc)
      * @see org.joml.Quaterniondc#transform(double, double, double, org.joml.Vector4d)
      */
     public Vector4d transform(double x, double y, double z, Vector4d dest) {
-        double w2 = this.w * this.w;
-        double x2 = this.x * this.x;
-        double y2 = this.y * this.y;
-        double z2 = this.z * this.z;
-        double zw = this.z * this.w, zwd = zw + zw;
-        double xy = this.x * this.y, xyd = xy + xy;
-        double xz = this.x * this.z, xzd = xz + xz;
-        double yw = this.y * this.w, ywd = yw + yw;
-        double yz = this.y * this.z, yzd = yz + yz;
-        double xw = this.x * this.w, xwd = xw + xw;
-        double m00 = w2 + x2 - z2 - y2;
-        double m01 = xyd + zwd;
-        double m02 = xzd - ywd;
-        double m10 = xyd - zwd;
-        double m11 = y2 - z2 + w2 - x2;
-        double m12 = yzd + xwd;
-        double m20 = ywd + xzd;
-        double m21 = yzd - xwd;
-        double m22 = z2 - y2 - x2 + w2;
-        dest.x = m00 * x + m10 * y + m20 * z;
-        dest.y = m01 * x + m11 * y + m21 * z;
-        dest.z = m02 * x + m12 * y + m22 * z;
+        double xx = this.x * this.x, yy = this.y * this.y, zz = this.z * this.z, ww = this.w * this.w;
+        double xy = this.x * this.y, xz = this.x * this.z, yz = this.y * this.z, xw = this.x * this.w;
+        double zw = this.z * this.w, yw = this.y * this.w, k = 1 / (xx + yy + zz + ww);
+        return dest.set(Math.fma((xx - yy - zz + ww) * k, x, Math.fma(2 * (xy - zw) * k, y, (2 * (xz + yw) * k) * z)),
+                        Math.fma(2 * (xy + zw) * k, x, Math.fma((yy - xx - zz + ww) * k, y, (2 * (yz - xw) * k) * z)),
+                        Math.fma(2 * (xz - yw) * k, x, Math.fma(2 * (yz + xw) * k, y, ((zz - xx - yy + ww) * k) * z)), dest.w);
+    }
+
+    public Vector4d transformInverse(double x, double y, double z, Vector4d dest) {
+        double n = 1.0 / Math.fma(this.x, this.x, Math.fma(this.y, this.y, Math.fma(this.z, this.z, this.w * this.w)));
+        double qx = this.x * n, qy = this.y * n, qz = this.z * n, qw = this.w * n;
+        double xx = qx * qx, yy = qy * qy, zz = qz * qz, ww = qw * qw;
+        double xy = qx * qy, xz = qx * qz, yz = qy * qz, xw = qx * qw;
+        double zw = qz * qw, yw = qy * qw, k = 1 / (xx + yy + zz + ww);
+        return dest.set(Math.fma((xx - yy - zz + ww) * k, x, Math.fma(2 * (xy + zw) * k, y, (2 * (xz - yw) * k) * z)),
+                        Math.fma(2 * (xy - zw) * k, x, Math.fma((yy - xx - zz + ww) * k, y, (2 * (yz + xw) * k) * z)),
+                        Math.fma(2 * (xz + yw) * k, x, Math.fma(2 * (yz - xw) * k, y, ((zz - xx - yy + ww) * k) * z)));
+    }
+
+    public Vector3f transform(Vector3f vec){
+        return transform(vec.x, vec.y, vec.z, vec);
+    }
+
+    public Vector3f transformInverse(Vector3f vec){
+        return transformInverse(vec.x, vec.y, vec.z, vec);
+    }
+
+    public Vector4d transformUnit(Vector4d vec){
+        return transformUnit(vec, vec);
+    }
+
+    public Vector4d transformInverseUnit(Vector4d vec){
+        return transformInverseUnit(vec, vec);
+    }
+
+    public Vector3d transformUnit(Vector3dc vec, Vector3d dest) {
+        return transformUnit(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    public Vector3d transformInverseUnit(Vector3dc vec, Vector3d dest) {
+        return transformInverseUnit(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    public Vector3d transformUnit(double x, double y, double z, Vector3d dest) {
+        double xx = this.x * this.x, xy = this.x * this.y, xz = this.x * this.z;
+        double xw = this.x * this.w, yy = this.y * this.y, yz = this.y * this.z;
+        double yw = this.y * this.w, zz = this.z * this.z, zw = this.z * this.w;
+        return dest.set(Math.fma(Math.fma(-2, yy + zz, 1), x, Math.fma(2 * (xy - zw), y, (2 * (xz + yw)) * z)),
+                        Math.fma(2 * (xy + zw), x, Math.fma(Math.fma(-2, xx + zz, 1), y, (2 * (yz - xw)) * z)),
+                        Math.fma(2 * (xz - yw), x, Math.fma(2 * (yz + xw), y, Math.fma(-2, xx + yy, 1) * z)));
+    }
+
+    public Vector3d transformInverseUnit(double x, double y, double z, Vector3d dest) {
+        double xx = this.x * this.x, xy = this.x * this.y, xz = this.x * this.z;
+        double xw = this.x * this.w, yy = this.y * this.y, yz = this.y * this.z;
+        double yw = this.y * this.w, zz = this.z * this.z, zw = this.z * this.w;
+        return dest.set(Math.fma(Math.fma(-2, yy + zz, 1), x, Math.fma(2 * (xy + zw), y, (2 * (xz - yw)) * z)),
+                        Math.fma(2 * (xy - zw), x, Math.fma(Math.fma(-2, xx + zz, 1), y, (2 * (yz + xw)) * z)),
+                        Math.fma(2 * (xz + yw), x, Math.fma(2 * (yz - xw), y, Math.fma(-2, xx + yy, 1) * z)));
+    }
+
+    public Vector4d transformUnit(Vector4dc vec, Vector4d dest) {
+        return transformUnit(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    public Vector4d transformInverseUnit(Vector4dc vec, Vector4d dest) {
+        return transformInverseUnit(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    public Vector4d transformUnit(double x, double y, double z, Vector4d dest) {
+        double xx = this.x * this.x, xy = this.x * this.y, xz = this.x * this.z;
+        double xw = this.x * this.w, yy = this.y * this.y, yz = this.y * this.z;
+        double yw = this.y * this.w, zz = this.z * this.z, zw = this.z * this.w;
+        return dest.set(Math.fma(Math.fma(-2, yy + zz, 1), x, Math.fma(2 * (xy - zw), y, (2 * (xz + yw)) * z)),
+                        Math.fma(2 * (xy + zw), x, Math.fma(Math.fma(-2, xx + zz, 1), y, (2 * (yz - xw)) * z)),
+                        Math.fma(2 * (xz - yw), x, Math.fma(2 * (yz + xw), y, Math.fma(-2, xx + yy, 1) * z)),
+                        dest.w);
+    }
+
+    public Vector4d transformInverseUnit(double x, double y, double z, Vector4d dest) {
+        double xx = this.x * this.x, xy = this.x * this.y, xz = this.x * this.z;
+        double xw = this.x * this.w, yy = this.y * this.y, yz = this.y * this.z;
+        double yw = this.y * this.w, zz = this.z * this.z, zw = this.z * this.w;
+        return dest.set(Math.fma(Math.fma(-2, yy + zz, 1), x, Math.fma(2 * (xy + zw), y, (2 * (xz - yw)) * z)),
+                        Math.fma(2 * (xy - zw), x, Math.fma(Math.fma(-2, xx + zz, 1), y, (2 * (yz + xw)) * z)),
+                        Math.fma(2 * (xz + yw), x, Math.fma(2 * (yz - xw), y, Math.fma(-2, xx + yy, 1) * z)),
+                        dest.w);
+    }
+
+    public Vector3f transformUnit(Vector3f vec){
+        return transformUnit(vec.x, vec.y, vec.z, vec);
+    }
+
+    public Vector3f transformInverseUnit(Vector3f vec){
+        return transformInverseUnit(vec.x, vec.y, vec.z, vec);
+    }
+
+    public Vector3f transformPositiveX(Vector3f dest) {
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
+        double zw = z * w;
+        double xy = x * y;
+        double xz = x * z;
+        double yw = y * w;
+        dest.x = (float) (ww + xx - zz - yy);
+        dest.y = (float) (xy + zw + zw + xy);
+        dest.z = (float) (xz - yw + xz - yw);
         return dest;
+    }
+
+    public Vector4f transformPositiveX(Vector4f dest) {
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
+        double zw = z * w;
+        double xy = x * y;
+        double xz = x * z;
+        double yw = y * w;
+        dest.x = (float) (ww + xx - zz - yy);
+        dest.y = (float) (xy + zw + zw + xy);
+        dest.z = (float) (xz - yw + xz - yw);
+        return dest;
+    }
+
+    public Vector3f transformUnitPositiveX(Vector3f dest) {
+        double yy = y * y;
+        double zz = z * z;
+        double xy = x * y;
+        double xz = x * z;
+        double yw = y * w;
+        double zw = z * w;
+        dest.x = (float) (1.0 - yy - yy - zz - zz);
+        dest.y = (float) (xy + zw + xy + zw);
+        dest.z = (float) (xz - yw + xz - yw);
+        return dest;
+    }
+
+    public Vector4f transformUnitPositiveX(Vector4f dest) {
+        double yy = y * y;
+        double zz = z * z;
+        double xy = x * y;
+        double xz = x * z;
+        double yw = y * w;
+        double zw = z * w;
+        dest.x = (float) (1.0 - yy - yy - zz - zz);
+        dest.y = (float) (xy + zw + xy + zw);
+        dest.z = (float) (xz - yw + xz - yw);
+        return dest;
+    }
+
+    public Vector3f transformPositiveY(Vector3f dest) {
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
+        double zw = z * w;
+        double xy = x * y;
+        double yz = y * z;
+        double xw = x * w;
+        dest.x = (float) (-zw + xy - zw + xy);
+        dest.y = (float) (yy - zz + ww - xx);
+        dest.z = (float) (yz + yz + xw + xw);
+        return dest;
+    }
+
+    public Vector4f transformPositiveY(Vector4f dest) {
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
+        double zw = z * w;
+        double xy = x * y;
+        double yz = y * z;
+        double xw = x * w;
+        dest.x = (float) (-zw + xy - zw + xy);
+        dest.y = (float) (yy - zz + ww - xx);
+        dest.z = (float) (yz + yz + xw + xw);
+        return dest;
+    }
+
+    public Vector4f transformUnitPositiveY(Vector4f dest) {
+        double xx = x * x;
+        double zz = z * z;
+        double xy = x * y;
+        double yz = y * z;
+        double xw = x * w;
+        double zw = z * w;
+        dest.x = (float) (xy - zw + xy - zw);
+        dest.y = (float) (1.0 - xx - xx - zz - zz);
+        dest.z = (float) (yz + yz + xw + xw);
+        return dest;
+    }
+
+    public Vector3f transformUnitPositiveY(Vector3f dest) {
+        double xx = x * x;
+        double zz = z * z;
+        double xy = x * y;
+        double yz = y * z;
+        double xw = x * w;
+        double zw = z * w;
+        dest.x = (float) (xy - zw + xy - zw);
+        dest.y = (float) (1.0 - xx - xx - zz - zz);
+        dest.z = (float) (yz + yz + xw + xw);
+        return dest;
+    }
+
+    public Vector3f transformPositiveZ(Vector3f dest) {
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
+        double xz = x * z;
+        double yw = y * w;
+        double yz = y * z;
+        double xw = x * w;
+        dest.x = (float) (yw + xz + xz + yw);
+        dest.y = (float) (yz + yz - xw - xw);
+        dest.z = (float) (zz - yy - xx + ww);
+        return dest;
+    }
+
+    public Vector4f transformPositiveZ(Vector4f dest) {
+        double ww = w * w;
+        double xx = x * x;
+        double yy = y * y;
+        double zz = z * z;
+        double xz = x * z;
+        double yw = y * w;
+        double yz = y * z;
+        double xw = x * w;
+        dest.x = (float) (yw + xz + xz + yw);
+        dest.y = (float) (yz + yz - xw - xw);
+        dest.z = (float) (zz - yy - xx + ww);
+        return dest;
+    }
+
+    public Vector4f transformUnitPositiveZ(Vector4f dest) {
+        double xx = x * x;
+        double yy = y * y;
+        double xz = x * z;
+        double yz = y * z;
+        double xw = x * w;
+        double yw = y * w;
+        dest.x = (float) (xz + yw + xz + yw);
+        dest.y = (float) (yz + yz - xw - xw);
+        dest.z = (float) (1.0 - xx - xx - yy - yy);
+        return dest;
+    }
+
+    public Vector3f transformUnitPositiveZ(Vector3f dest) {
+        double xx = x * x;
+        double yy = y * y;
+        double xz = x * z;
+        double yz = y * z;
+        double xw = x * w;
+        double yw = y * w;
+        dest.x = (float) (xz + yw + xz + yw);
+        dest.y = (float) (yz + yz - xw - xw);
+        dest.z = (float) (1.0 - xx - xx - yy - yy);
+        return dest;
+    }
+
+    /* (non-Javadoc)
+     * @see org.joml.Quaterniondc#transform(org.joml.Vector4f)
+     */
+    public Vector4f transform(Vector4f vec){
+        return transform(vec, vec);
+    }
+
+    public Vector4f transformInverse(Vector4f vec){
+        return transformInverse(vec, vec);
+    }
+
+    /* (non-Javadoc)
+     * @see org.joml.Quaterniondc#transform(org.joml.Vector3fc, org.joml.Vector3f)
+     */
+    public Vector3f transform(Vector3fc vec, Vector3f dest) {
+        return transform(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    public Vector3f transformInverse(Vector3fc vec, Vector3f dest) {
+        return transformInverse(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    /* (non-Javadoc)
+     * @see org.joml.Quaterniondc#transform(double, double, double, org.joml.Vector3f)
+     */
+    public Vector3f transform(double x, double y, double z, Vector3f dest) {
+        double xx = this.x * this.x, yy = this.y * this.y, zz = this.z * this.z, ww = this.w * this.w;
+        double xy = this.x * this.y, xz = this.x * this.z, yz = this.y * this.z, xw = this.x * this.w;
+        double zw = this.z * this.w, yw = this.y * this.w, k = 1 / (xx + yy + zz + ww);
+        return dest.set(Math.fma((xx - yy - zz + ww) * k, x, Math.fma(2 * (xy - zw) * k, y, (2 * (xz + yw) * k) * z)),
+                        Math.fma(2 * (xy + zw) * k, x, Math.fma((yy - xx - zz + ww) * k, y, (2 * (yz - xw) * k) * z)),
+                        Math.fma(2 * (xz - yw) * k, x, Math.fma(2 * (yz + xw) * k, y, ((zz - xx - yy + ww) * k) * z)));
+    }
+
+    public Vector3f transformInverse(double x, double y, double z, Vector3f dest) {
+        double n = 1.0 / Math.fma(this.x, this.x, Math.fma(this.y, this.y, Math.fma(this.z, this.z, this.w * this.w)));
+        double qx = this.x * n, qy = this.y * n, qz = this.z * n, qw = this.w * n;
+        double xx = qx * qx, yy = qy * qy, zz = qz * qz, ww = qw * qw;
+        double xy = qx * qy, xz = qx * qz, yz = qy * qz, xw = qx * qw;
+        double zw = qz * qw, yw = qy * qw, k = 1 / (xx + yy + zz + ww);
+        return dest.set(Math.fma((xx - yy - zz + ww) * k, x, Math.fma(2 * (xy + zw) * k, y, (2 * (xz - yw) * k) * z)),
+                        Math.fma(2 * (xy - zw) * k, x, Math.fma((yy - xx - zz + ww) * k, y, (2 * (yz + xw) * k) * z)),
+                        Math.fma(2 * (xz + yw) * k, x, Math.fma(2 * (yz - xw) * k, y, ((zz - xx - yy + ww) * k) * z)));
+    }
+
+    /* (non-Javadoc)
+     * @see org.joml.Quaterniondc#transform(org.joml.Vector4fc, org.joml.Vector4f)
+     */
+    public Vector4f transform(Vector4fc vec, Vector4f dest) {
+        return transform(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    public Vector4f transformInverse(Vector4fc vec, Vector4f dest) {
+        return transformInverse(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    /* (non-Javadoc)
+     * @see org.joml.Quaterniondc#transform(double, double, double, org.joml.Vector4f)
+     */
+    public Vector4f transform(double x, double y, double z, Vector4f dest) {
+        double xx = this.x * this.x, yy = this.y * this.y, zz = this.z * this.z, ww = this.w * this.w;
+        double xy = this.x * this.y, xz = this.x * this.z, yz = this.y * this.z, xw = this.x * this.w;
+        double zw = this.z * this.w, yw = this.y * this.w, k = 1 / (xx + yy + zz + ww);
+        return dest.set((float) Math.fma((xx - yy - zz + ww) * k, x, Math.fma(2 * (xy - zw) * k, y, (2 * (xz + yw) * k) * z)),
+                        (float) Math.fma(2 * (xy + zw) * k, x, Math.fma((yy - xx - zz + ww) * k, y, (2 * (yz - xw) * k) * z)),
+                        (float) Math.fma(2 * (xz - yw) * k, x, Math.fma(2 * (yz + xw) * k, y, ((zz - xx - yy + ww) * k) * z)), dest.w);
+    }
+
+    public Vector4f transformInverse(double x, double y, double z, Vector4f dest) {
+        double n = 1.0 / Math.fma(this.x, this.x, Math.fma(this.y, this.y, Math.fma(this.z, this.z, this.w * this.w)));
+        double qx = this.x * n, qy = this.y * n, qz = this.z * n, qw = this.w * n;
+        double xx = qx * qx, yy = qy * qy, zz = qz * qz, ww = qw * qw;
+        double xy = qx * qy, xz = qx * qz, yz = qy * qz, xw = qx * qw;
+        double zw = qz * qw, yw = qy * qw, k = 1 / (xx + yy + zz + ww);
+        return dest.set(Math.fma((xx - yy - zz + ww) * k, x, Math.fma(2 * (xy + zw) * k, y, (2 * (xz - yw) * k) * z)),
+                        Math.fma(2 * (xy - zw) * k, x, Math.fma((yy - xx - zz + ww) * k, y, (2 * (yz + xw) * k) * z)),
+                        Math.fma(2 * (xz + yw) * k, x, Math.fma(2 * (yz - xw) * k, y, ((zz - xx - yy + ww) * k) * z)), dest.w);
+    }
+
+    public Vector4f transformUnit(Vector4f vec){
+        return transformUnit(vec, vec);
+    }
+
+    public Vector4f transformInverseUnit(Vector4f vec){
+        return transformInverseUnit(vec, vec);
+    }
+
+    public Vector3f transformUnit(Vector3fc vec, Vector3f dest) {
+        return transformUnit(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    public Vector3f transformInverseUnit(Vector3fc vec, Vector3f dest) {
+        return transformInverseUnit(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    public Vector3f transformUnit(double x, double y, double z, Vector3f dest) {
+        double xx = this.x * this.x, xy = this.x * this.y, xz = this.x * this.z;
+        double xw = this.x * this.w, yy = this.y * this.y, yz = this.y * this.z;
+        double yw = this.y * this.w, zz = this.z * this.z, zw = this.z * this.w;
+        return dest.set((float) Math.fma(Math.fma(-2, yy + zz, 1), x, Math.fma(2 * (xy - zw), y, (2 * (xz + yw)) * z)),
+                        (float) Math.fma(2 * (xy + zw), x, Math.fma(Math.fma(-2, xx + zz, 1), y, (2 * (yz - xw)) * z)),
+                        (float) Math.fma(2 * (xz - yw), x, Math.fma(2 * (yz + xw), y, Math.fma(-2, xx + yy, 1) * z)));
+    }
+
+    public Vector3f transformInverseUnit(double x, double y, double z, Vector3f dest) {
+        double xx = this.x * this.x, xy = this.x * this.y, xz = this.x * this.z;
+        double xw = this.x * this.w, yy = this.y * this.y, yz = this.y * this.z;
+        double yw = this.y * this.w, zz = this.z * this.z, zw = this.z * this.w;
+        return dest.set((float) Math.fma(Math.fma(-2, yy + zz, 1), x, Math.fma(2 * (xy + zw), y, (2 * (xz - yw)) * z)),
+                        (float) Math.fma(2 * (xy - zw), x, Math.fma(Math.fma(-2, xx + zz, 1), y, (2 * (yz + xw)) * z)),
+                        (float) Math.fma(2 * (xz + yw), x, Math.fma(2 * (yz - xw), y, Math.fma(-2, xx + yy, 1) * z)));
+    }
+
+    public Vector4f transformUnit(Vector4fc vec, Vector4f dest) {
+        return transformUnit(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    public Vector4f transformInverseUnit(Vector4fc vec, Vector4f dest) {
+        return transformInverseUnit(vec.x(), vec.y(), vec.z(), dest);
+    }
+
+    public Vector4f transformUnit(double x, double y, double z, Vector4f dest) {
+        double xx = this.x * this.x, xy = this.x * this.y, xz = this.x * this.z;
+        double xw = this.x * this.w, yy = this.y * this.y, yz = this.y * this.z;
+        double yw = this.y * this.w, zz = this.z * this.z, zw = this.z * this.w;
+        return dest.set((float) Math.fma(Math.fma(-2, yy + zz, 1), x, Math.fma(2 * (xy - zw), y, (2 * (xz + yw)) * z)),
+                        (float) Math.fma(2 * (xy + zw), x, Math.fma(Math.fma(-2, xx + zz, 1), y, (2 * (yz - xw)) * z)),
+                        (float) Math.fma(2 * (xz - yw), x, Math.fma(2 * (yz + xw), y, Math.fma(-2, xx + yy, 1) * z)));
+    }
+
+    public Vector4f transformInverseUnit(double x, double y, double z, Vector4f dest) {
+        double xx = this.x * this.x, xy = this.x * this.y, xz = this.x * this.z;
+        double xw = this.x * this.w, yy = this.y * this.y, yz = this.y * this.z;
+        double yw = this.y * this.w, zz = this.z * this.z, zw = this.z * this.w;
+        return dest.set((float) Math.fma(Math.fma(-2, yy + zz, 1), x, Math.fma(2 * (xy + zw), y, (2 * (xz - yw)) * z)),
+                        (float) Math.fma(2 * (xy - zw), x, Math.fma(Math.fma(-2, xx + zz, 1), y, (2 * (yz + xw)) * z)),
+                        (float) Math.fma(2 * (xz + yw), x, Math.fma(2 * (yz - xw), y, Math.fma(-2, xx + yy, 1) * z)));
     }
 
     /* (non-Javadoc)
      * @see org.joml.Quaterniondc#invert(org.joml.Quaterniond)
      */
     public Quaterniond invert(Quaterniond dest) {
-        double invNorm = 1.0 / (x * x + y * y + z * z + w * w);
+        double invNorm = 1.0 / lengthSquared();
         dest.x = -x * invNorm;
         dest.y = -y * invNorm;
         dest.z = -z * invNorm;
@@ -1120,16 +1569,15 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#div(org.joml.Quaterniondc, org.joml.Quaterniond)
      */
     public Quaterniond div(Quaterniondc b, Quaterniond dest) {
-        double invNorm = 1.0 / (b.x() * b.x() + b.y() * b.y() + b.z() * b.z() + b.w() * b.w());
+        double invNorm = 1.0 / Math.fma(b.x(), b.x(), Math.fma(b.y(), b.y(), Math.fma(b.z(), b.z(), b.w() * b.w())));
         double x = -b.x() * invNorm;
         double y = -b.y() * invNorm;
         double z = -b.z() * invNorm;
         double w = b.w() * invNorm;
-        dest.set(this.w * x + this.x * w + this.y * z - this.z * y,
-                 this.w * y - this.x * z + this.y * w + this.z * x,
-                 this.w * z + this.x * y - this.y * x + this.z * w,
-                 this.w * w - this.x * x - this.y * y - this.z * z);
-        return dest;
+        return dest.set(Math.fma(this.w, x, Math.fma(this.x, w, Math.fma(this.y, z, -this.z * y))),
+                        Math.fma(this.w, y, Math.fma(-this.x, z, Math.fma(this.y, w, this.z * x))),
+                        Math.fma(this.w, z, Math.fma(this.x, y, Math.fma(-this.y, x, this.z * w))),
+                        Math.fma(this.w, w, Math.fma(-this.x, x, Math.fma(-this.y, y, -this.z * z))));
     }
 
     /**
@@ -1187,9 +1635,8 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#lengthSquared()
      */
     public double lengthSquared() {
-        return x * x + y * y + z * z + w * w;
+        return Math.fma(x, x, Math.fma(y, y, Math.fma(z, z, w * w)));
     }
-
 
     /**
      * Set this quaternion from the supplied euler angles (in radians) with rotation order XYZ.
@@ -1317,12 +1764,12 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#slerp(org.joml.Quaterniondc, double, org.joml.Quaterniond)
      */
     public Quaterniond slerp(Quaterniondc target, double alpha, Quaterniond dest) {
-        double cosom = x * target.x() + y * target.y() + z * target.z() + w * target.w();
+        double cosom = Math.fma(x, target.x(), Math.fma(y, target.y(), Math.fma(z, target.z(), w * target.w())));
         double absCosom = Math.abs(cosom);
         double scale0, scale1;
         if (1.0 - absCosom > 1E-6) {
             double sinSqr = 1.0 - absCosom * absCosom;
-            double sinom = 1.0 / Math.sqrt(sinSqr);
+            double sinom = Math.invsqrt(sinSqr);
             double omega = Math.atan2(sinSqr * sinom, absCosom);
             scale0 = Math.sin((1.0 - alpha) * omega) * sinom;
             scale1 = Math.sin(alpha * omega) * sinom;
@@ -1331,10 +1778,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
             scale1 = alpha;
         }
         scale1 = cosom >= 0.0 ? scale1 : -scale1;
-        dest.x = scale0 * x + scale1 * target.x();
-        dest.y = scale0 * y + scale1 * target.y();
-        dest.z = scale0 * z + scale1 * target.z();
-        dest.w = scale0 * w + scale1 * target.w();
+        dest.x = Math.fma(scale0, x, scale1 * target.x());
+        dest.y = Math.fma(scale0, y, scale1 * target.y());
+        dest.z = Math.fma(scale0, z, scale1 * target.z());
+        dest.w = Math.fma(scale0, w, scale1 * target.w());
         return dest;
     }
 
@@ -1458,11 +1905,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         dqY = thetaY * s;
         dqZ = thetaZ * s;
         /* Pre-multiplication */
-        dest.set(dqW * x + dqX * w + dqY * z - dqZ * y,
-                 dqW * y - dqX * z + dqY * w + dqZ * x,
-                 dqW * z + dqX * y - dqY * x + dqZ * w,
-                 dqW * w - dqX * x - dqY * y - dqZ * z);
-        return dest;
+        return dest.set(Math.fma(dqW, x, Math.fma(dqX, w, Math.fma(dqY, z, -dqZ * y))),
+                        Math.fma(dqW, y, Math.fma(-dqX, z, Math.fma(dqY, w, dqZ * x))),
+                        Math.fma(dqW, z, Math.fma(dqX, y, Math.fma(-dqY, x, dqZ * w))),
+                        Math.fma(dqW, w, Math.fma(-dqX, x, Math.fma(-dqY, y, -dqZ * z))));
     }
 
     /**
@@ -1483,14 +1929,14 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#nlerp(org.joml.Quaterniondc, double, org.joml.Quaterniond)
      */
     public Quaterniond nlerp(Quaterniondc q, double factor, Quaterniond dest) {
-        double cosom = x * q.x() + y * q.y() + z * q.z() + w * q.w();
+        double cosom = Math.fma(x, q.x(), Math.fma(y, q.y(), Math.fma(z, q.z(), w * q.w())));
         double scale0 = 1.0 - factor;
         double scale1 = (cosom >= 0.0) ? factor : -factor;
-        dest.x = scale0 * x + scale1 * q.x();
-        dest.y = scale0 * y + scale1 * q.y();
-        dest.z = scale0 * z + scale1 * q.z();
-        dest.w = scale0 * w + scale1 * q.w();
-        double s = 1.0 / Math.sqrt(dest.x * dest.x + dest.y * dest.y + dest.z * dest.z + dest.w * dest.w);
+        dest.x = Math.fma(scale0, x, scale1 * q.x());
+        dest.y = Math.fma(scale0, y, scale1 * q.y());
+        dest.z = Math.fma(scale0, z, scale1 * q.z());
+        dest.w = Math.fma(scale0, w, scale1 * q.w());
+        double s = Math.invsqrt(Math.fma(dest.x, dest.x, Math.fma(dest.y, dest.y, Math.fma(dest.z, dest.z, dest.w * dest.w))));
         dest.x *= s;
         dest.y *= s;
         dest.z *= s;
@@ -1534,7 +1980,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
     public Quaterniond nlerpIterative(Quaterniondc q, double alpha, double dotThreshold, Quaterniond dest) {
         double q1x = x, q1y = y, q1z = z, q1w = w;
         double q2x = q.x(), q2y = q.y(), q2z = q.z(), q2w = q.w();
-        double dot = q1x * q2x + q1y * q2y + q1z * q2z + q1w * q2w;
+        double dot = Math.fma(q1x, q2x, Math.fma(q1y, q2y, Math.fma(q1z, q2z, q1w * q2w)));
         double absDot = Math.abs(dot);
         if (1.0 - 1E-6 < absDot) {
             return dest.set(this);
@@ -1544,42 +1990,42 @@ public class Quaterniond implements Externalizable, Quaterniondc {
             double scale0 = 0.5;
             double scale1 = dot >= 0.0 ? 0.5 : -0.5;
             if (alphaN < 0.5) {
-                q2x = scale0 * q2x + scale1 * q1x;
-                q2y = scale0 * q2y + scale1 * q1y;
-                q2z = scale0 * q2z + scale1 * q1z;
-                q2w = scale0 * q2w + scale1 * q1w;
-                double s = 1.0 / Math.sqrt(q2x * q2x + q2y * q2y + q2z * q2z + q2w * q2w);
+                q2x = Math.fma(scale0, q2x, scale1 * q1x);
+                q2y = Math.fma(scale0, q2y, scale1 * q1y);
+                q2z = Math.fma(scale0, q2z, scale1 * q1z);
+                q2w = Math.fma(scale0, q2w, scale1 * q1w);
+                float s = (float) Math.invsqrt(Math.fma(q2x, q2x, Math.fma(q2y, q2y, Math.fma(q2z, q2z, q2w * q2w))));
                 q2x *= s;
                 q2y *= s;
                 q2z *= s;
                 q2w *= s;
                 alphaN = alphaN + alphaN;
             } else {
-                q1x = scale0 * q1x + scale1 * q2x;
-                q1y = scale0 * q1y + scale1 * q2y;
-                q1z = scale0 * q1z + scale1 * q2z;
-                q1w = scale0 * q1w + scale1 * q2w;
-                double s = 1.0 / Math.sqrt(q1x * q1x + q1y * q1y + q1z * q1z + q1w * q1w);
+                q1x = Math.fma(scale0, q1x, scale1 * q2x);
+                q1y = Math.fma(scale0, q1y, scale1 * q2y);
+                q1z = Math.fma(scale0, q1z, scale1 * q2z);
+                q1w = Math.fma(scale0, q1w, scale1 * q2w);
+                float s = (float) Math.invsqrt(Math.fma(q1x, q1x, Math.fma(q1y, q1y, Math.fma(q1z, q1z, q1w * q1w))));
                 q1x *= s;
                 q1y *= s;
                 q1z *= s;
                 q1w *= s;
                 alphaN = alphaN + alphaN - 1.0;
             }
-            dot = q1x * q2x + q1y * q2y + q1z * q2z + q1w * q2w;
+            dot = Math.fma(q1x, q2x, Math.fma(q1y, q2y, Math.fma(q1z, q2z, q1w * q2w)));
             absDot = Math.abs(dot);
         }
         double scale0 = 1.0 - alphaN;
         double scale1 = dot >= 0.0 ? alphaN : -alphaN;
-        double destX = scale0 * q1x + scale1 * q2x;
-        double destY = scale0 * q1y + scale1 * q2y;
-        double destZ = scale0 * q1z + scale1 * q2z;
-        double destW = scale0 * q1w + scale1 * q2w;
-        double s = 1.0 / Math.sqrt(destX * destX + destY * destY + destZ * destZ + destW * destW);
-        dest.x *= s;
-        dest.y *= s;
-        dest.z *= s;
-        dest.w *= s;
+        double resX = Math.fma(scale0, q1x, scale1 * q2x);
+        double resY = Math.fma(scale0, q1y, scale1 * q2y);
+        double resZ = Math.fma(scale0, q1z, scale1 * q2z);
+        double resW = Math.fma(scale0, q1w, scale1 * q2w);
+        double s = Math.invsqrt(Math.fma(resX, resX, Math.fma(resY, resY, Math.fma(resZ, resZ, resW * resW))));
+        dest.x = resX * s;
+        dest.y = resY * s;
+        dest.z = resZ * s;
+        dest.w = resW * s;
         return dest;
     }
 
@@ -1711,7 +2157,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      */
     public Quaterniond lookAlong(double dirX, double dirY, double dirZ, double upX, double upY, double upZ, Quaterniond dest) {
         // Normalize direction
-        double invDirLength = 1.0 / Math.sqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
+        double invDirLength = Math.invsqrt(dirX * dirX + dirY * dirY + dirZ * dirZ);
         double dirnX = -dirX * invDirLength;
         double dirnY = -dirY * invDirLength;
         double dirnZ = -dirZ * invDirLength;
@@ -1721,7 +2167,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         leftY = upZ * dirnX - upX * dirnZ;
         leftZ = upX * dirnY - upY * dirnX;
         // normalize left
-        double invLeftLength = 1.0 / Math.sqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
+        double invLeftLength = Math.invsqrt(leftX * leftX + leftY * leftY + leftZ * leftZ);
         leftX *= invLeftLength;
         leftY *= invLeftLength;
         leftZ *= invLeftLength;
@@ -1766,11 +2212,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
             }
         }
         /* Multiply */
-        dest.set(this.w * x + this.x * w + this.y * z - this.z * y,
-                 this.w * y - this.x * z + this.y * w + this.z * x,
-                 this.w * z + this.x * y - this.y * x + this.z * w,
-                 this.w * w - this.x * x - this.y * y - this.z * z);
-        return dest;
+        return dest.set(Math.fma(this.w, x, Math.fma(this.x, w, Math.fma(this.y, z, -this.z * y))),
+                        Math.fma(this.w, y, Math.fma(-this.x, z, Math.fma(this.y, w, this.z * x))),
+                        Math.fma(this.w, z, Math.fma(this.x, y, Math.fma(-this.y, x, this.z * w))),
+                        Math.fma(this.w, w, Math.fma(-this.x, x, Math.fma(-this.y, y, -this.z * z))));
     }
 
     /**
@@ -1792,7 +2237,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @return the string representation
      */
     public String toString(NumberFormat formatter) {
-        return "(" + formatter.format(x) + " " + formatter.format(y) + " " + formatter.format(z) + " " + formatter.format(w) + ")";
+        return "(" + Runtime.format(x, formatter) + " " + Runtime.format(y, formatter) + " " + Runtime.format(z, formatter) + " " + Runtime.format(w, formatter) + ")";
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {
@@ -1868,18 +2313,17 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#difference(org.joml.Quaterniondc, org.joml.Quaterniond)
      */
     public Quaterniond difference(Quaterniondc other, Quaterniond dest) {
-        double invNorm = 1.0 / (x * x + y * y + z * z + w * w);
+        double invNorm = 1.0 / lengthSquared();
         double x = -this.x * invNorm;
         double y = -this.y * invNorm;
         double z = -this.z * invNorm;
         double w = this.w * invNorm;
-        dest.set(w * other.x() + x * other.w() + y * other.z() - z * other.y(),
-                 w * other.y() - x * other.z() + y * other.w() + z * other.x(),
-                 w * other.z() + x * other.y() - y * other.x() + z * other.w(),
-                 w * other.w() - x * other.x() - y * other.y() - z * other.z());
+        dest.set(Math.fma(w, other.x(), Math.fma(x, other.w(), Math.fma(y, other.z(), -z * other.y()))),
+                 Math.fma(w, other.y(), Math.fma(-x, other.z(), Math.fma(y, other.w(), z * other.x()))),
+                 Math.fma(w, other.z(), Math.fma(x, other.y(), Math.fma(-y, other.x(), z * other.w()))),
+                 Math.fma(w, other.w(), Math.fma(-x, other.x(), Math.fma(-y, other.y(), -z * other.z()))));
         return dest;
     }
-    
 
     /**
      * Set <code>this</code> quaternion to a rotation that rotates the <code>fromDir</code> vector to point along <code>toDir</code>.
@@ -1903,27 +2347,43 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @return this
      */
     public Quaterniond rotationTo(double fromDirX, double fromDirY, double fromDirZ, double toDirX, double toDirY, double toDirZ) {
-        x = fromDirY * toDirZ - fromDirZ * toDirY;
-        y = fromDirZ * toDirX - fromDirX * toDirZ;
-        z = fromDirX * toDirY - fromDirY * toDirX;
-        w = Math.sqrt((fromDirX * fromDirX + fromDirY * fromDirY + fromDirZ * fromDirZ) *
-                              (toDirX * toDirX + toDirY * toDirY + toDirZ * toDirZ)) +
-                 (fromDirX * toDirX + fromDirY * toDirY + fromDirZ * toDirZ);
-        double invNorm = 1.0 / Math.sqrt(x * x + y * y + z * z + w * w);
-        if (Double.isInfinite(invNorm)) {
-            // Rotation is ambiguous: Find appropriate rotation axis (1. try toDir x +Z)
-            x = toDirY; y = -toDirX; z = 0.0; w = 0.0;
-            invNorm = (float) (1.0 / Math.sqrt(x * x + y * y));
-            if (Double.isInfinite(invNorm)) {
-                // 2. try toDir x +X
-                x = 0.0; y = toDirZ; z = -toDirY; w = 0.0;
-                invNorm = (float) (1.0 / Math.sqrt(y * y + z * z));
+        double fn = Math.invsqrt(Math.fma(fromDirX, fromDirX, Math.fma(fromDirY, fromDirY, fromDirZ * fromDirZ)));
+        double tn = Math.invsqrt(Math.fma(toDirX, toDirX, Math.fma(toDirY, toDirY, toDirZ * toDirZ)));
+        double fx = fromDirX * fn, fy = fromDirY * fn, fz = fromDirZ * fn;
+        double tx = toDirX * tn, ty = toDirY * tn, tz = toDirZ * tn;
+        double dot = fx * tx + fy * ty + fz * tz;
+        double x, y, z, w;
+        if (dot < -1.0 + 1E-6) {
+            x = fy;
+            y = -fx;
+            z = 0.0;
+            w = 0.0;
+            if (x * x + y * y == 0.0) {
+                x = 0.0;
+                y = fz;
+                z = -fy;
+                w = 0.0;
             }
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            this.w = 0;
+        } else {
+            double sd2 = Math.sqrt((1.0 + dot) * 2.0);
+            double isd2 = 1.0 / sd2;
+            double cx = fy * tz - fz * ty;
+            double cy = fz * tx - fx * tz;
+            double cz = fx * ty - fy * tx;
+            x = cx * isd2;
+            y = cy * isd2;
+            z = cz * isd2;
+            w = sd2 * 0.5;
+            double n2 = Math.invsqrt(Math.fma(x, x, Math.fma(y, y, Math.fma(z, z, w * w))));
+            this.x = x * n2;
+            this.y = y * n2;
+            this.z = z * n2;
+            this.w = w * n2;
         }
-        x *= invNorm;
-        y *= invNorm;
-        z *= invNorm;
-        w *= invNorm;
         return this;
     }
 
@@ -1949,33 +2409,44 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      */
     public Quaterniond rotateTo(double fromDirX, double fromDirY, double fromDirZ,
                                 double toDirX, double toDirY, double toDirZ, Quaterniond dest) {
-        double x = fromDirY * toDirZ - fromDirZ * toDirY;
-        double y = fromDirZ * toDirX - fromDirX * toDirZ;
-        double z = fromDirX * toDirY - fromDirY * toDirX;
-        double w = Math.sqrt((fromDirX * fromDirX + fromDirY * fromDirY + fromDirZ * fromDirZ) *
-                                    (toDirX * toDirX + toDirY * toDirY + toDirZ * toDirZ)) +
-                  (fromDirX * toDirX + fromDirY * toDirY + fromDirZ * toDirZ);
-        double invNorm = 1.0 / Math.sqrt(x * x + y * y + z * z + w * w);
-        if (Double.isInfinite(invNorm)) {
-            // Rotation is ambiguous: Find appropriate rotation axis (1. try toDir x +Z)
-            x = toDirY; y = -toDirX; z = 0.0; w = 0.0;
-            invNorm = (float) (1.0 / Math.sqrt(x * x + y * y));
-            if (Double.isInfinite(invNorm)) {
-                // 2. try toDir x +X
-                x = 0.0; y = toDirZ; z = -toDirY; w = 0.0;
-                invNorm = (float) (1.0 / Math.sqrt(y * y + z * z));
+        double fn = Math.invsqrt(Math.fma(fromDirX, fromDirX, Math.fma(fromDirY, fromDirY, fromDirZ * fromDirZ)));
+        double tn = Math.invsqrt(Math.fma(toDirX, toDirX, Math.fma(toDirY, toDirY, toDirZ * toDirZ)));
+        double fx = fromDirX * fn, fy = fromDirY * fn, fz = fromDirZ * fn;
+        double tx = toDirX * tn, ty = toDirY * tn, tz = toDirZ * tn;
+        double dot = fx * tx + fy * ty + fz * tz;
+        double x, y, z, w;
+        if (dot < -1.0 + 1E-6) {
+            x = fy;
+            y = -fx;
+            z = 0.0;
+            w = 0.0;
+            if (x * x + y * y == 0.0) {
+                x = 0.0;
+                y = fz;
+                z = -fy;
+                w = 0.0;
             }
+        } else {
+            double sd2 = Math.sqrt((1.0 + dot) * 2.0);
+            double isd2 = 1.0 / sd2;
+            double cx = fy * tz - fz * ty;
+            double cy = fz * tx - fx * tz;
+            double cz = fx * ty - fy * tx;
+            x = cx * isd2;
+            y = cy * isd2;
+            z = cz * isd2;
+            w = sd2 * 0.5;
+            double n2 = Math.invsqrt(Math.fma(x, x, Math.fma(y, y, Math.fma(z, z, w * w))));
+            x *= n2;
+            y *= n2;
+            z *= n2;
+            w *= n2;
         }
-        x *= invNorm;
-        y *= invNorm;
-        z *= invNorm;
-        w *= invNorm;
         /* Multiply */
-        dest.set(this.w * x + this.x * w + this.y * z - this.z * y,
-                 this.w * y - this.x * z + this.y * w + this.z * x,
-                 this.w * z + this.x * y - this.y * x + this.z * w,
-                 this.w * w - this.x * x - this.y * y - this.z * z);
-        return dest;
+        return dest.set(Math.fma(this.w, x, Math.fma(this.x, w, Math.fma(this.y, z, -this.z * y))),
+                        Math.fma(this.w, y, Math.fma(-this.x, z, Math.fma(this.y, w, this.z * x))),
+                        Math.fma(this.w, z, Math.fma(this.x, y, Math.fma(-this.y, x, this.z * w))),
+                        Math.fma(this.w, w, Math.fma(-this.x, x, Math.fma(-this.y, y, -this.z * z))));
     }
 
     /**
@@ -2008,14 +2479,11 @@ public class Quaterniond implements Externalizable, Quaterniondc {
     public Quaterniond rotationAxis(double angle, double axisX, double axisY, double axisZ) {
         double hangle = angle / 2.0;
         double sinAngle = Math.sin(hangle);
-        double invVLength = 1.0 / Math.sqrt(axisX * axisX + axisY * axisY + axisZ * axisZ);
-
-        x = axisX * invVLength * sinAngle;
-        y = axisY * invVLength * sinAngle;
-        z = axisZ * invVLength * sinAngle;
-        w = (float) Math.cosFromSin(sinAngle, hangle);
-
-        return this;
+        double invVLength = Math.invsqrt(axisX * axisX + axisY * axisY + axisZ * axisZ);
+        return set(axisX * invVLength * sinAngle,
+                   axisY * invVLength * sinAngle,
+                   axisZ * invVLength * sinAngle,
+                   Math.cosFromSin(sinAngle, hangle));
     }
 
     /**
@@ -2028,11 +2496,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
     public Quaterniond rotationX(double angle) {
         double sin = Math.sin(angle * 0.5);
         double cos = Math.cosFromSin(sin, angle * 0.5);
-        w = cos;
-        x = sin;
-        y = 0.0;
-        z = 0.0;
-        return this;
+        return set(sin, 0, cos, 0);
     }
 
     /**
@@ -2045,11 +2509,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
     public Quaterniond rotationY(double angle) {
         double sin = Math.sin(angle * 0.5);
         double cos = Math.cosFromSin(sin, angle * 0.5);
-        w = cos;
-        x = 0.0;
-        y = sin;
-        z = 0.0;
-        return this;
+        return set(0, sin, 0, cos);
     }
 
     /**
@@ -2062,11 +2522,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
     public Quaterniond rotationZ(double angle) {
         double sin = Math.sin(angle * 0.5);
         double cos = Math.cosFromSin(sin, angle * 0.5);
-        w = cos;
-        x = 0.0;
-        y = 0.0;
-        z = sin;
-        return this;
+        return set(0, 0, sin, cos);
     }
 
     /**
@@ -2150,11 +2606,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
     public Quaterniond rotateX(double angle, Quaterniond dest) {
         double sin = Math.sin(angle * 0.5);
         double cos = Math.cosFromSin(sin, angle * 0.5);
-        dest.set(w * sin + x * cos,
-                 y * cos + z * sin,
-                 z * cos - y * sin,
-                 w * cos - x * sin);
-        return dest;
+        return dest.set(w * sin + x * cos,
+                        y * cos + z * sin,
+                        z * cos - y * sin,
+                        w * cos - x * sin);
     }
 
     /**
@@ -2179,11 +2634,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
     public Quaterniond rotateY(double angle, Quaterniond dest) {
         double sin = Math.sin(angle * 0.5);
         double cos = Math.cosFromSin(sin, angle * 0.5);
-        dest.set(x * cos - z * sin,
-                 w * sin + y * cos,
-                 x * sin + z * cos,
-                 w * cos - y * sin);
-        return dest;
+        return dest.set(x * cos - z * sin,
+                        w * sin + y * cos,
+                        x * sin + z * cos,
+                        w * cos - y * sin);
     }
 
     /**
@@ -2208,11 +2662,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
     public Quaterniond rotateZ(double angle, Quaterniond dest) {
         double sin = Math.sin(angle * 0.5);
         double cos = Math.cosFromSin(sin, angle * 0.5);
-        dest.set(x * cos + y * sin,
-                 y * cos - x * sin,
-                 w * sin + z * cos,
-                 w * cos - z * sin);
-        return dest;
+        return dest.set(x * cos + y * sin,
+                        y * cos - x * sin,
+                        w * sin + z * cos,
+                        w * cos - z * sin);
     }
 
     /**
@@ -2348,11 +2801,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         double y = cx*sycz - sx*cysz;
         double z = cx*cysz + sx*sycz;
         // right-multiply
-        dest.set(this.w * x + this.x * w + this.y * z - this.z * y,
-                 this.w * y - this.x * z + this.y * w + this.z * x,
-                 this.w * z + this.x * y - this.y * x + this.z * w,
-                 this.w * w - this.x * x - this.y * y - this.z * z);
-        return dest;
+        return dest.set(Math.fma(this.w, x, Math.fma(this.x, w, Math.fma(this.y, z, -this.z * y))),
+                        Math.fma(this.w, y, Math.fma(-this.x, z, Math.fma(this.y, w, this.z * x))),
+                        Math.fma(this.w, z, Math.fma(this.x, y, Math.fma(-this.y, x, this.z * w))),
+                        Math.fma(this.w, w, Math.fma(-this.x, x, Math.fma(-this.y, y, -this.z * z))));
     }
 
     /**
@@ -2398,11 +2850,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         double y = cx*sycz + sx*cysz;
         double z = cx*cysz - sx*sycz;
         // right-multiply
-        dest.set(this.w * x + this.x * w + this.y * z - this.z * y,
-                 this.w * y - this.x * z + this.y * w + this.z * x,
-                 this.w * z + this.x * y - this.y * x + this.z * w,
-                 this.w * w - this.x * x - this.y * y - this.z * z);
-        return dest;
+        return dest.set(Math.fma(this.w, x, Math.fma(this.x, w, Math.fma(this.y, z, -this.z * y))),
+                        Math.fma(this.w, y, Math.fma(-this.x, z, Math.fma(this.y, w, this.z * x))),
+                        Math.fma(this.w, z, Math.fma(this.x, y, Math.fma(-this.y, x, this.z * w))),
+                        Math.fma(this.w, w, Math.fma(-this.x, x, Math.fma(-this.y, y, -this.z * z))));
     }
 
     /**
@@ -2448,11 +2899,10 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         double z = yw * sz - yz * cz;
         double w = yw * cz + yz * sz;
         // right-multiply
-        dest.set(this.w * x + this.x * w + this.y * z - this.z * y,
-                 this.w * y - this.x * z + this.y * w + this.z * x,
-                 this.w * z + this.x * y - this.y * x + this.z * w,
-                 this.w * w - this.x * x - this.y * y - this.z * z);
-        return dest;
+        return dest.set(Math.fma(this.w, x, Math.fma(this.x, w, Math.fma(this.y, z, -this.z * y))),
+                        Math.fma(this.w, y, Math.fma(-this.x, z, Math.fma(this.y, w, this.z * x))),
+                        Math.fma(this.w, z, Math.fma(this.x, y, Math.fma(-this.y, x, this.z * w))),
+                        Math.fma(this.w, w, Math.fma(-this.x, x, Math.fma(-this.y, y, -this.z * z))));
     }
 
     /* (non-Javadoc)
@@ -2460,7 +2910,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      */
     public Vector3d getEulerAnglesXYZ(Vector3d eulerAngles) {
         eulerAngles.x = Math.atan2(2.0 * (x*w - y*z), 1.0 - 2.0 * (x*x + y*y));
-        eulerAngles.y = Math.asin(2.0 * (x*z + y*w));
+        eulerAngles.y = Math.safeAsin(2.0 * (x*z + y*w));
         eulerAngles.z = Math.atan2(2.0 * (z*w - x*y), 1.0 - 2.0 * (y*y + z*z));
         return eulerAngles;
     }
@@ -2471,18 +2921,15 @@ public class Quaterniond implements Externalizable, Quaterniondc {
     public Quaterniond rotateAxis(double angle, double axisX, double axisY, double axisZ, Quaterniond dest) {
         double hangle = angle / 2.0;
         double sinAngle = Math.sin(hangle);
-        double invVLength = 1.0 / Math.sqrt(axisX * axisX + axisY * axisY + axisZ * axisZ);
-
+        double invVLength = Math.invsqrt(Math.fma(axisX, axisX, Math.fma(axisY, axisY, axisZ * axisZ)));
         double rx = axisX * invVLength * sinAngle;
         double ry = axisY * invVLength * sinAngle;
         double rz = axisZ * invVLength * sinAngle;
         double rw = Math.cosFromSin(sinAngle, hangle);
-
-        dest.set(w * rx + x * rw + y * rz - z * ry,
-                 w * ry - x * rz + y * rw + z * rx,
-                 w * rz + x * ry - y * rx + z * rw,
-                 w * rw - x * rx - y * ry - z * rz);
-        return dest;
+        return dest.set(Math.fma(this.w, rx, Math.fma(this.x, rw, Math.fma(this.y, rz, -this.z * ry))),
+                        Math.fma(this.w, ry, Math.fma(-this.x, rz, Math.fma(this.y, rw, this.z * rx))),
+                        Math.fma(this.w, rz, Math.fma(this.x, ry, Math.fma(-this.y, rx, this.z * rw))),
+                        Math.fma(this.w, rw, Math.fma(-this.x, rx, Math.fma(-this.y, ry, -this.z * rz))));
     }
 
     /* (non-Javadoc)
@@ -2540,7 +2987,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#positiveX(org.joml.Vector3d)
      */
     public Vector3d positiveX(Vector3d dir) {
-        double invNorm = 1.0 / (x * x + y * y + z * z + w * w);
+        double invNorm = 1.0 / lengthSquared();
         double nx = -x * invNorm;
         double ny = -y * invNorm;
         double nz = -z * invNorm;
@@ -2569,7 +3016,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#positiveY(org.joml.Vector3d)
      */
     public Vector3d positiveY(Vector3d dir) {
-        double invNorm = 1.0 / (x * x + y * y + z * z + w * w);
+        double invNorm = 1.0 / lengthSquared();
         double nx = -x * invNorm;
         double ny = -y * invNorm;
         double nz = -z * invNorm;
@@ -2600,7 +3047,7 @@ public class Quaterniond implements Externalizable, Quaterniondc {
      * @see org.joml.Quaterniondc#positiveZ(org.joml.Vector3d)
      */
     public Vector3d positiveZ(Vector3d dir) {
-        double invNorm = 1.0 / (x * x + y * y + z * z + w * w);
+        double invNorm = 1.0 / lengthSquared();
         double nx = -x * invNorm;
         double ny = -y * invNorm;
         double nz = -z * invNorm;
@@ -2627,4 +3074,41 @@ public class Quaterniond implements Externalizable, Quaterniondc {
         return dir;
     }
 
+    /**
+     * Conjugate <code>this</code> by the given quaternion <code>q</code> by computing <code>q * this * q^-1</code>.
+     * 
+     * @param q
+     *          the {@link Quaterniondc} to conjugate <code>this</code> by
+     * @return this
+     */
+    public Quaterniond conjugateBy(Quaterniondc q) {
+        return conjugateBy(q, this);
+    }
+
+    /**
+     * Conjugate <code>this</code> by the given quaternion <code>q</code> by computing <code>q * this * q^-1</code>
+     * and store the result into <code>dest</code>.
+     * 
+     * @param q
+     *          the {@link Quaterniondc} to conjugate <code>this</code> by
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    public Quaterniond conjugateBy(Quaterniondc q, Quaterniond dest) {
+        double invNorm = 1.0 / q.lengthSquared();
+        double qix = -q.x() * invNorm, qiy = -q.y() * invNorm, qiz = -q.z() * invNorm, qiw = q.w() * invNorm;
+        double qpx = Math.fma(q.w(), x, Math.fma(q.x(), w, Math.fma(q.y(), z, -q.z() * y)));
+        double qpy = Math.fma(q.w(), y, Math.fma(-q.x(), z, Math.fma(q.y(), w, q.z() * x)));
+        double qpz = Math.fma(q.w(), z, Math.fma(q.x(), y, Math.fma(-q.y(), x, q.z() * w)));
+        double qpw = Math.fma(q.w(), w, Math.fma(-q.x(), x, Math.fma(-q.y(), y, -q.z() * z)));
+        return dest.set(Math.fma(qpw, qix, Math.fma(qpx, qiw, Math.fma(qpy, qiz, -qpz * qiy))),
+                        Math.fma(qpw, qiy, Math.fma(-qpx, qiz, Math.fma(qpy, qiw, qpz * qix))),
+                        Math.fma(qpw, qiz, Math.fma(qpx, qiy, Math.fma(-qpy, qix, qpz * qiw))),
+                        Math.fma(qpw, qiw, Math.fma(-qpx, qix, Math.fma(-qpy, qiy, -qpz * qiz))));
+    }
+
+    public boolean isFinite() {
+        return Math.isFinite(x) && Math.isFinite(y) && Math.isFinite(z) && Math.isFinite(w);
+    }
 }

@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -463,6 +463,36 @@ public interface Vector2fc {
     float get(int component) throws IllegalArgumentException;
 
     /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector
+     * using the given {@link RoundingMode}.
+     *
+     * @param mode
+     *          the {@link RoundingMode} to use
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector2i get(int mode, Vector2i dest);
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector2f get(Vector2f dest);
+
+    /**
+     * Set the components of the given vector <code>dest</code> to those of <code>this</code> vector.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector2d get(Vector2d dest);
+
+    /**
      * Compute for each component of this vector the largest (closest to positive
      * infinity) {@code float} value that is less than or equal to that
      * component and is equal to a mathematical integer and store the result in
@@ -499,13 +529,23 @@ public interface Vector2fc {
 
     /**
      * Determine whether all components are finite floating-point values, that
-     * is, they are not {@link Double#isNaN() NaN} and not
-     * {@link Double#isInfinite() infinity}.
+     * is, they are not {@link Float#isNaN() NaN} and not
+     * {@link Float#isInfinite() infinity}.
      *
      * @return {@code true} if all components are finite floating-point values;
      *         {@code false} otherwise
      */
     boolean isFinite();
+
+    /**
+     * Compute the absolute of each of this vector's components
+     * and store the result into <code>dest</code>.
+     * 
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    Vector2f absolute(Vector2f dest);
 
     /**
      * Compare the vector components of <code>this</code> vector with the given vector using the given <code>delta</code>

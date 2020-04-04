@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2017-2019 JOML
+ * Copyright (c) 2017-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -29,9 +29,6 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
-
-import org.joml.internal.Options;
-import org.joml.internal.Runtime;
 
 /**
  * Represents a 2D axis-aligned rectangle.
@@ -112,6 +109,34 @@ public class Rectanglef implements Externalizable {
     }
 
     /**
+     * Return the width of the rectangle
+     *
+     * @return width
+     */
+    public float width() {
+        return this.maxX - this.minX;
+    }
+
+    /**
+     * Return the height of the rectangle
+     *
+     * @return width
+     */
+    public float height() {
+        return this.maxY - this.minY;
+    }
+
+    /**
+     * Return the area of the rectangle
+     *
+     * @return area
+     */
+    public float area() {
+        return this.width() * this.height();
+    }
+
+
+    /**
      * Check if this and the given rectangle intersect.
      * 
      * @param other
@@ -130,8 +155,8 @@ public class Rectanglef implements Externalizable {
      *          the point to test
      * @return <code>true</code> iff this rectangle contains the point; <code>false</code> otherwise
      */
-    public boolean contains(Vector2f point) {
-        return contains(point.x, point.y);
+    public boolean contains(Vector2fc point) {
+        return contains(point.x(), point.y());
     }
 
     /**
@@ -203,6 +228,210 @@ public class Rectanglef implements Externalizable {
         return dest;
     }
 
+    /**
+     * Scale <code>this</code> about the origin.
+     *
+     * @param sf
+     *          the scaling factor in the x and y axis
+     * @return this
+     */
+    public Rectanglef scale(float sf) {
+        return scale(sf, sf);
+    }
+
+    /**
+     * Scale <code>this</code> about the origin and store the result in <code>dest</code>.
+     *
+     * @param sf
+     *          the scaling factor in the x and y axis
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    public Rectanglef scale(float sf, Rectanglef dest) {
+        return scale(sf, sf, dest);
+    }
+
+    /**
+     * Scale <code>this</code> about an anchor.
+     * <p>
+     * This is equivalent to <code>translate(-ax, -ay).scale(sf).translate(ax, ay)</code>
+     *
+     * @param sf
+     *          the scaling factor in the x and y axis
+     * @param ax
+     *          the x coordinate of the anchor
+     * @param ay
+     *          the y coordinate of the anchor
+     * @return this
+     */
+    public Rectanglef scale(float sf, float ax, float ay) {
+        return scale(sf, sf, ax, ay);
+    }
+
+    /**
+     * Scale <code>this</code> about an anchor and store the result in <code>dest</code>.
+     * <p>
+     * This is equivalent to <code>translate(-ax, -ay, dest).scale(sf).translate(ax, ay)</code>
+     *
+     * @param sf
+     *          the scaling factor in the x and y axis
+     * @param ax
+     *          the x coordinate of the anchor
+     * @param ay
+     *          the y coordinate of the anchor
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    public Rectanglef scale(float sf, float ax, float ay, Rectanglef dest) {
+        return scale(sf, sf, ax, ay, dest);
+    }
+
+    /**
+     * Scale <code>this</code> about an anchor.
+     * <p>
+     * This is equivalent to <code>translate(anchor.negate()).scale(sf).translate(anchor.negate())</code>
+     *
+     * @param sf
+     *          the scaling factor in the x and y axis
+     * @param anchor
+     *          the location of the anchor
+     * @return this
+     */
+    public Rectanglef scale(float sf, Vector2fc anchor) {
+        return scale(sf, anchor.x(), anchor.y());
+    }
+
+    /**
+     * Scale <code>this</code> about an anchor and store the result in <code>dest</code>.
+     * <p>
+     * This is equivalent to <code>translate(anchor.negate(), dest).scale(sf).translate(anchor.negate())</code>
+     *
+     * @param sf
+     *          the scaling factor in the x and y axis
+     * @param anchor
+     *          the location of the anchor
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    public Rectanglef scale(float sf, Vector2fc anchor, Rectanglef dest) {
+        return scale(sf, anchor.x(), anchor.y(), dest);
+    }
+
+    /**
+     * Scale <code>this</code> about the origin.
+     *
+     * @param sx
+     *          the scaling factor on the x axis
+     * @param sy
+     *          the scaling factor on the y axis
+     * @return this
+     */
+    public Rectanglef scale(float sx, float sy) {
+        return scale(sx, sy, 0f, 0f);
+    }
+
+    /**
+     * Scale <code>this</code> about the origin and store the result in <code>dest</code>.
+     *
+     * @param sx
+     *          the scaling factor on the x axis
+     * @param sy
+     *          the scaling factor on the y axis
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    public Rectanglef scale(float sx, float sy, Rectanglef dest) {
+        return scale(sx, sy, 0f, 0f, dest);
+    }
+
+    /**
+     * Scale <code>this</code> about an anchor.
+     * <p>
+     * This is equivalent to <code>translate(-ax, -ay).scale(sx, sy).translate(ax, ay)</code>
+     *
+     * @param sx
+     *          the scaling factor on the x axis
+     * @param sy
+     *          the scaling factor on the y axis
+     * @param ax
+     *          the x coordinate of the anchor
+     * @param ay
+     *          the y coordinate of the anchor
+     * @return this
+     */
+    public Rectanglef scale(float sx, float sy, float ax, float ay) {
+        minX = (minX - ax) * sx + ax;
+        minY = (minY - ay) * sy + ay;
+        maxX = (maxX - ax) * sx + ax;
+        maxY = (maxY - ay) * sy + ay;
+        return this;
+    }
+
+    /**
+     * Scale <code>this</code> about an anchor.
+     * <p>
+     * This is equivalent to <code>translate(anchor.negate()).scale(sx, sy).translate(anchor.negate())</code>
+     *
+     * @param sx
+     *          the scaling factor on the x axis
+     * @param sy
+     *          the scaling factor on the y axis
+     * @param anchor
+     *          the location of the anchor
+     * @return this
+     */
+    public Rectanglef scale(float sx, float sy, Vector2fc anchor) {
+        return scale(sx, sy, anchor.x(), anchor.y());
+    }
+
+    /**
+     * Scale <code>this</code> about an anchor and store the result in <code>dest</code>.
+     * <p>
+     * This is equivalent to <code>translate(-ax, -ay, dest).scale(sx, sy).translate(ax, ay)</code>
+     *
+     * @param sx
+     *          the scaling factor on the x axis
+     * @param sy
+     *          the scaling factor on the y axis
+     * @param ax
+     *          the x coordinate of the anchor
+     * @param ay
+     *          the y coordinate of the anchor
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    public Rectanglef scale(float sx, float sy, float ax, float ay, Rectanglef dest) {
+        dest.minX = (minX - ax) * sx + ax;
+        dest.minY = (minY - ay) * sy + ay;
+        dest.maxX = (maxX - ax) * sx + ax;
+        dest.maxY = (maxY - ay) * sy + ay;
+        return dest;
+    }
+
+    /**
+     * Scale <code>this</code> about an anchor and store the result in <code>dest</code>.
+     * <p>
+     * This is equivalent to <code>translate(anchor.negate(), dest).scale(sx, sy).translate(anchor.negate())</code>
+     *
+     * @param sx
+     *          the scaling factor on the x axis
+     * @param sy
+     *          the scaling factor on the y axis
+     * @param anchor
+     *          the location of the anchor
+     * @param dest
+     *          will hold the result
+     * @return dest
+     */
+    public Rectanglef scale(float sx, float sy, Vector2fc anchor, Rectanglef dest) {
+        return scale(sx, sy, anchor.x(), anchor.y(), dest);
+    }
+
     public int hashCode() {
         final int prime = 31;
         int result = 1;
@@ -251,8 +480,8 @@ public class Rectanglef implements Externalizable {
      * @return the string representation
      */
     public String toString(NumberFormat formatter) {
-        return "(" + formatter.format(minX) + " " + formatter.format(minY) + ") < "
-             + "(" + formatter.format(maxX) + " " + formatter.format(maxY) + ")";
+        return "(" + Runtime.format(minX, formatter) + " " + Runtime.format(minY, formatter) + ") < "
+             + "(" + Runtime.format(maxX, formatter) + " " + Runtime.format(maxY, formatter) + ")";
     }
 
     public void writeExternal(ObjectOutput out) throws IOException {

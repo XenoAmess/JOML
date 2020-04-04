@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2019 JOML
+ * Copyright (c) 2016-2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,7 +21,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.joml.internal;
+package org.joml;
 
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
@@ -35,7 +35,7 @@ import java.util.Locale;
  * 
  * @author Kai Burjack
  */
-public final class Options {
+final class Options {
 
     /**
      * Whether certain debugging checks should be made, such as that only direct NIO Buffers are used when Unsafe is active,

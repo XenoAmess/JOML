@@ -1,7 +1,7 @@
 /*
  * The MIT License
  *
- * Copyright (c) 2016-2020 JOML
+ * Copyright (c) 2020 JOML
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -21,21 +21,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-package org.joml.sampling;
+package org.joml;
 
 /**
- * Callback used for notifying about a new generated 2D sample.
+ * Rounding modes.
  * 
  * @author Kai Burjack
  */
-public interface Callback2d {
+public class RoundingMode {
+    private RoundingMode() {}
     /**
-     * Will be called whenever a new sample with the given coordinates <code>(x, y)</code> is generated.
-     * 
-     * @param x
-     *            the x coordinate of the new sample point
-     * @param y
-     *            the y coordinate of the new sample point
+     * Discards the fractional part.
      */
-    void onNewSample(float x, float y);
+    public static final int TRUNCATE = 0;
+    /**
+     * Round towards positive infinity.
+     */
+    public static final int CEILING = 1;
+    /**
+     * Round towards negative infinity.
+     */
+    public static final int FLOOR = 2;
+    /**
+     * Round towards the nearest neighbor. If both neighbors are equidistant, round
+     * towards the even neighbor.
+     */
+    public static final int HALF_EVEN = 3;
+    /**
+     * Round towards the nearest neighbor. If both neighbors are equidistant, round
+     * down.
+     */
+    public static final int HALF_DOWN = 4;
+    /**
+     * Round towards the nearest neighbor. If both neighbors are equidistant, round
+     * up.
+     */
+    public static final int HALF_UP = 5;
 }
