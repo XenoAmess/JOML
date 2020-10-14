@@ -60,7 +60,7 @@
 		<httpclient.version>4.5.7</httpclient.version>
 		<asm.version>7.1</asm.version>
 		<gwt-user.version>2.5.0</gwt-user.version>
-		<junit.version>3.8.2</junit.version>
+		<junit.version>4.13.1</junit.version>
 		<jcp.version>6.1.4</jcp.version>
 		<platform>__JRE__</platform>
 		<hasNio>__HAS_NIO__</hasNio>
